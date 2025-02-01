@@ -8,9 +8,9 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
+import java.nio.file.Path;
 import java.util.Iterator;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
 
 import mjtfinalproject.command.factory.CommandFactory;
 
@@ -19,17 +19,21 @@ public class Server {
     private static final int BUFFER_SIZE = 1024;
     private static final String HOST = "localhost";
 
-    private static final int PORT = 6789;
+
+    private static final Path USER_DATABASE = Path.of("users.txt");
+    private static final Path GROUP_DATABASE = Path.of("groups.txt");
+
+    private final int port;
+
     private boolean isServerWorking;
 
     private ByteBuffer buffer;
     private Selector selector;
 
+    public Server(int port) {
+        validatePort(port);
 
-    public Server() {
-        validateArguments(port, pollRepository);
-
-        this.pollRepository = pollRepository;
+        this.port = port;
     }
 
     public void start() {
@@ -119,7 +123,7 @@ public class Server {
     private void configureServerSocketChannel(ServerSocketChannel channel) throws IOException {
         selector = Selector.open();
 
-        channel.bind(new InetSocketAddress(HOST, PORT));
+        channel.bind(new InetSocketAddress(HOST, port));
         channel.configureBlocking(false);
         channel.register(selector, SelectionKey.OP_ACCEPT);
 
@@ -127,13 +131,12 @@ public class Server {
         isServerWorking = true;
     }
 
-    private void validateArguments(int port, PollRepository repository) {
-        if (port < 0) {
-            throw new IllegalArgumentException("Port number should be positive.");
-        }
+    private void validatePort(int port) {
+        final int minPort = 1024;
 
-        if (Objects.isNull(repository)) {
-            throw new IllegalArgumentException("Poll repository is null.");
+        if (port < minPort) {
+            throw new IllegalArgumentException("Unavailable port.");
         }
     }
+
 }
