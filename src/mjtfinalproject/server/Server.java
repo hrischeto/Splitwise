@@ -7,21 +7,24 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
-import java.nio.file.Path;
 import java.util.Iterator;
-import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import mjtfinalproject.command.factory.CommandFactory;
+import mjtfinalproject.repositories.grouprepository.GroupRepository;
+import mjtfinalproject.repositories.grouprepository.InMemoryGroupRepository;
+import mjtfinalproject.repositories.userrepository.InMemoryUserRepository;
+import mjtfinalproject.repositories.userrepository.UserRepository;
+import mjtfinalproject.server.servertask.SelectionKeyExecutor;
 
 public class Server {
 
     private static final int BUFFER_SIZE = 1024;
     private static final String HOST = "localhost";
 
-
-    private static final Path USER_DATABASE = Path.of("users.txt");
-    private static final Path GROUP_DATABASE = Path.of("groups.txt");
+    private static final String ADMIN_USERNAME = System.getenv("SplitwiseAdminUsername");
+    private static final String ADMIN_PASSWORD = System.getenv("SplitwiseAdminPassword");
 
     private final int port;
 
@@ -30,14 +33,26 @@ public class Server {
     private ByteBuffer buffer;
     private Selector selector;
 
+    private final GroupRepository groupRepository;
+    private final UserRepository userRepository;
+
+    private final CommandFactory commandFactory;
+
     public Server(int port) {
         validatePort(port);
+
+        groupRepository = new InMemoryGroupRepository();
+        userRepository = new InMemoryUserRepository();
+
+        commandFactory = new CommandFactory(groupRepository, userRepository);
 
         this.port = port;
     }
 
     public void start() {
-        try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open()) {
+        try (ServerSocketChannel serverSocketChannel = ServerSocketChannel.open();
+             ExecutorService executor = Executors.newCachedThreadPool();
+        ) {
             configureServerSocketChannel(serverSocketChannel);
             while (isServerWorking) {
                 try {
@@ -49,16 +64,12 @@ public class Server {
                     Iterator<SelectionKey> keyIterator = selector.selectedKeys().iterator();
                     while (keyIterator.hasNext()) {
                         SelectionKey key = keyIterator.next();
-                        if (key.isReadable()) {
-                            if (!read(key)) {
-                                continue;
-                            }
-                        } else if (key.isAcceptable()) {
-                            accept(selector, key);
-                        }
+
+                        executor.execute(new SelectionKeyExecutor(key, buffer, commandFactory, selector));
+
                         keyIterator.remove();
                     }
-                } catch (IOException e) {
+                } catch (IOException | UncheckedIOException e ) {
                     System.out.println("Error occurred while processing client request: " + e.getMessage());
                 }
             }
@@ -72,52 +83,9 @@ public class Server {
         if (selector.isOpen()) {
             selector.wakeup();
         }
-    }
 
-    private String getClientInput(SocketChannel clientChannel) throws IOException {
-        buffer.clear();
-
-        int readBytes = clientChannel.read(buffer);
-        if (readBytes < 0) {
-            clientChannel.close();
-            return null;
-        }
-
-        buffer.flip();
-
-        byte[] clientInputBytes = new byte[buffer.remaining()];
-        buffer.get(clientInputBytes);
-
-        return new String(clientInputBytes, StandardCharsets.UTF_8);
-    }
-
-    private void writeClientOutput(SocketChannel clientChannel, String output) throws IOException {
-        buffer.clear();
-        buffer.put(output.getBytes());
-        buffer.flip();
-
-        clientChannel.write(buffer);
-    }
-
-    private boolean read(SelectionKey key) throws IOException {
-        SocketChannel clientChannel = (SocketChannel) key.channel();
-        String clientInput = getClientInput(clientChannel);
-        if (clientInput == null) {
-            return false;
-        }
-
-        String output = (CommandFactory.newCommand(clientInput)).execute(pollRepository);
-        writeClientOutput(clientChannel, output);
-
-        return true;
-    }
-
-    private void accept(Selector selector, SelectionKey key) throws IOException {
-        ServerSocketChannel sockChannel = (ServerSocketChannel) key.channel();
-        SocketChannel accept = sockChannel.accept();
-
-        accept.configureBlocking(false);
-        accept.register(selector, SelectionKey.OP_READ);
+        groupRepository.safeToDatabase();
+        userRepository.safeToDatabase();
     }
 
     private void configureServerSocketChannel(ServerSocketChannel channel) throws IOException {
