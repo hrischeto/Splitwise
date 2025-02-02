@@ -49,7 +49,7 @@ public class SelectionKeyExecutor implements Runnable {
             return;
         }
 
-        String output = (commandFactory.newCommand(clientInput)).execute();
+        String output = commandFactory.newCommand(clientInput, clientChannel).execute();
         writeClientOutput(clientChannel, output);
 
     }

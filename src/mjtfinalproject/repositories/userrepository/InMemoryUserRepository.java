@@ -7,6 +7,7 @@ import mjtfinalproject.exceptions.InvalidEntity;
 import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -24,7 +25,12 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public RegisteredUser getUser(String name) {
+    public Optional<RegisteredUser> getUser(String name) {
+
+    }
+
+    @Override
+    public Set<RegisteredUser> getAllUsers() {
 
     }
 

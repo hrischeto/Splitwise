@@ -1,6 +1,6 @@
 package mjtfinalproject.entities.users;
 
-import mjtfinalproject.entities.Group;
+import mjtfinalproject.entities.group.Group;
 import mjtfinalproject.obligation.Obligation;
 
 import java.util.HashSet;
@@ -32,6 +32,10 @@ public class RegisteredUser {
 
     public void addFriend() {
 
+    }
+
+    public String getUsername() {
+        return name;
     }
 
     private void validateArguments(String name, String password) {

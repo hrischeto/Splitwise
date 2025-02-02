@@ -1,6 +1,6 @@
 package mjtfinalproject.repositories.grouprepository;
 
-import mjtfinalproject.entities.Group;
+import mjtfinalproject.entities.group.Group;
 import mjtfinalproject.exceptions.InvalidEntity;
 import mjtfinalproject.exceptions.InvalidGroupId;
 
