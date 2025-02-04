@@ -12,15 +12,15 @@ import java.util.Optional;
 
 public class LogIn implements Command {
 
-    private static final int INPUT_LENGTH = 2;
+    protected static final int INPUT_LENGTH = 2;
 
-    private final String username;
-    private final String password;
+    protected final String username;
+    protected final String password;
 
-    private final UserRepository userRepository;
+    protected final UserRepository userRepository;
 
-    private final Map<SocketChannel, RegisteredUser> loggedUsers;
-    private final SocketChannel clientChannel;
+    protected final Map<SocketChannel, RegisteredUser> loggedUsers;
+    protected final SocketChannel clientChannel;
 
     public LogIn(UserRepository userRepository, Map<SocketChannel, RegisteredUser> loggedUsers,
                  SocketChannel clientChannel, String... input) {
