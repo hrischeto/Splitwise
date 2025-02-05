@@ -5,6 +5,7 @@ import mjtfinalproject.repositories.userrepository.UserRepository;
 
 import java.nio.channels.SocketChannel;
 import java.util.Map;
+import java.util.Objects;
 
 public class Register extends LogIn {
 
@@ -15,7 +16,7 @@ public class Register extends LogIn {
 
     @Override
     public String execute() {
-        if (username.isEmpty() || password.isEmpty()) {
+        if (Objects.isNull(username) || Objects.isNull(password)) {
             return "\"status\":\"ERROR\", \"message\":\"Invalid input for \"register\" command.";
         }
 

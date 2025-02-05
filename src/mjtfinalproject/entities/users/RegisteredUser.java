@@ -1,6 +1,8 @@
 package mjtfinalproject.entities.users;
 
+import mjtfinalproject.command.commands.profilemanagement.passwordencryptor.PasswordEncryptor;
 import mjtfinalproject.entities.group.Group;
+import mjtfinalproject.exceptions.InvalidEntity;
 import mjtfinalproject.obligation.Obligation;
 
 import java.util.HashSet;
@@ -21,7 +23,7 @@ public class RegisteredUser {
         validateArguments(name, password);
 
         this.name = name;
-        this.password = password.hashCode();
+        this.password = PasswordEncryptor.encryptPassword(password);
 
         obligationsToPay = new HashSet<>();
         paymentsToReceive = new HashSet<>();
@@ -30,12 +32,26 @@ public class RegisteredUser {
         groups = new HashSet<>();
     }
 
-    public void addFriend() {
+    public void addFriend(RegisteredUser friendToAdd) {
+        validateFriend(friendToAdd);
 
+        friends.add(friendToAdd);
+    }
+
+    public void addToGroup(Group group) {
+        if (Objects.isNull(group)) {
+            throw new InvalidEntity("Group to join was null.");
+        }
+
+        groups.add(group);
     }
 
     public String getUsername() {
         return name;
+    }
+
+    public int getPassword() {
+        return password;
     }
 
     private void validateArguments(String name, String password) {
@@ -46,6 +62,29 @@ public class RegisteredUser {
         if (Objects.isNull(password)) {
             throw new IllegalArgumentException("Null password.");
         }
+    }
+
+    private void validateFriend(RegisteredUser friendToAdd) {
+        if (Objects.isNull(friendToAdd)) {
+            throw new InvalidEntity("User to add as friend was null");
+        }
+
+        if (friendToAdd.equals(this)) {
+            throw new InvalidEntity("Cannot add yourself as a friend");
+        }
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        RegisteredUser that = (RegisteredUser) o;
+        return Objects.equals(name, that.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(name);
     }
 
 }

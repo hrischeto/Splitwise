@@ -1,6 +1,7 @@
 package mjtfinalproject.command.commands.profilemanagement;
 
 import mjtfinalproject.command.Command;
+import mjtfinalproject.command.commands.profilemanagement.passwordencryptor.PasswordEncryptor;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
 import mjtfinalproject.repositories.userrepository.UserRepository;
@@ -47,8 +48,12 @@ public class LogIn implements Command {
 
         Optional<RegisteredUser> user = userRepository.getUser(username);
         if (user.isPresent()) {
-            loggedUsers.put(clientChannel, user.get());
-            return "\"status\":\"OK\", \"message\":\"User logged in successfully!\"";
+            if (user.get().getPassword() == PasswordEncryptor.encryptPassword(password)) {
+                loggedUsers.put(clientChannel, user.get());
+                return "\"status\":\"OK\", \"message\":\"User logged in successfully!\"";
+            }
+
+            return  "\"status\":\"ERROR\", \"message\":\"Wrong password!\"";
         }
 
         return "\"status\":\"ERROR\", \"message\":\"User with such username does not exists." +

@@ -1,7 +1,6 @@
 package mjtfinalproject.repositories.userrepository;
 
 import mjtfinalproject.entities.users.RegisteredUser;
-import mjtfinalproject.entities.users.User;
 import mjtfinalproject.exceptions.InvalidEntity;
 
 import java.nio.file.Path;
@@ -26,12 +25,12 @@ public class InMemoryUserRepository implements UserRepository {
 
     @Override
     public Optional<RegisteredUser> getUser(String name) {
-
+        return null;
     }
 
     @Override
     public Set<RegisteredUser> getAllUsers() {
-
+        return null;
     }
 
     @Override
