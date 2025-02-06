@@ -38,7 +38,7 @@ public class RegisteredUser {
         friends.add(friendToAdd);
     }
 
-    public void addToGroup(Group group) {
+    public void addGroup(Group group) {
         if (Objects.isNull(group)) {
             throw new InvalidEntity("Group to join was null.");
         }

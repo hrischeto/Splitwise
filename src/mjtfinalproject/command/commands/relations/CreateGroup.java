@@ -42,7 +42,7 @@ public class CreateGroup implements Command {
 
     @Override
     public String execute() {
-        if (Objects.isNull(userRepository) || Objects.isNull(groupRepository) || Objects.isNull(input)) {
+        if (Objects.isNull(input)) {
             return "\"status\":\"ERROR\", \"message\":\"Invalid input for \"create-group\" command.";
         }
 
@@ -55,9 +55,15 @@ public class CreateGroup implements Command {
             }
             members.add(user.get());
         }
-
         members.add(creatingUser);
-        groupRepository.addGroup(new Group(input[GROUP_NAME_INDEX], members));
+
+        Group group = new Group(input[GROUP_NAME_INDEX], members);
+        groupRepository.addGroup(group);
+
+        for (RegisteredUser member:members) {
+            member.addGroup(group);
+        }
+
         return "\"status\":\"OK\", \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
     }
 
@@ -76,5 +82,5 @@ public class CreateGroup implements Command {
             throw new FailedCommandCreationException("User creating group is null.");
         }
     }
-    
+
 }

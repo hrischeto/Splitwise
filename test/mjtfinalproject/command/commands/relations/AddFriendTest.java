@@ -11,7 +11,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
@@ -27,14 +26,23 @@ public class AddFriendTest {
     private RegisteredUser userMock;
     @Mock
     private UserRepository userRepositoryMock;
-    private String[] input;
 
     private AddFriend addFriend;
+    private AddFriend addFriendWrongLengthInput;
 
     @BeforeEach
     void setUp() {
-        input = new String[] {"username"};
+        String[] input = new String[] {"username"};
+        String[] wrongInput = new String[] {};
+
         addFriend = new AddFriend(userMock, userRepositoryMock, input);
+        addFriendWrongLengthInput = new AddFriend(userMock, userRepositoryMock, wrongInput);
+    }
+
+    @Test
+    void testWrongLengthInput() {
+        assertTrue(addFriendWrongLengthInput.execute().contains("\"status\":\"ERROR\""),
+            "When user input does not have the right quantity of arguments, a negative message is returned.");
     }
 
     @Test

@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class LogInTest {
 
-    private String[] input;
-
     @Mock
     private UserRepository userRepositoryMock;
 
@@ -33,12 +31,22 @@ public class LogInTest {
     private SocketChannel clientChannelMock;
 
     private LogIn login;
+    private LogIn loginWrongInputLength;
 
     @BeforeEach
-    void setUp(){
-        input = new String[]{"username","password"};
+    void setUp() {
+        String[] input = new String[] {"username", "password"};
+        String[] wrongInput = new String[] {"username", "password", "something"};
+
         loggedUsers = new ConcurrentHashMap<>();
         login = new LogIn(userRepositoryMock, loggedUsers, clientChannelMock, input);
+        loginWrongInputLength = new LogIn(userRepositoryMock, loggedUsers, clientChannelMock, wrongInput);
+    }
+
+    @Test
+    void testWrongLengthInput() {
+        assertTrue(loginWrongInputLength.execute().contains("\"status\":\"ERROR\""),
+            "When user input has wrong input length, a negative message is returned.");
     }
 
     @Test

@@ -23,8 +23,6 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 public class RegisterTest {
 
-    private String[] input;
-
     @Mock
     private UserRepository userRepositoryMock;
 
@@ -33,12 +31,22 @@ public class RegisterTest {
     private SocketChannel clientChannelMock;
 
     private Register register;
+    private Register registerWrongInput;
 
     @BeforeEach
-    void setUp(){
-        input = new String[]{"username","password"};
+    void setUp() {
+        String[] input = new String[] {"username", "password"};
+        String[] wrongInput = new String[] {"username", "password", "something"};
+
         loggedUsers = new ConcurrentHashMap<>();
         register = new Register(userRepositoryMock, loggedUsers, clientChannelMock, input);
+        registerWrongInput = new Register(userRepositoryMock, loggedUsers, clientChannelMock, wrongInput);
+    }
+
+    @Test
+    void testWrongNumberOfArguments() {
+        assertTrue(registerWrongInput.execute().contains("\"status\":\"ERROR\""),
+            "\"When user input has wrong input length, a negative message is returned.\"");
     }
 
     @Test
@@ -49,7 +57,8 @@ public class RegisterTest {
 
         assertTrue(result.contains("\"status\":\"OK\""),
             "When successfully registering a user, a positive message should be returned.");
-        assertTrue(loggedUsers.containsKey(clientChannelMock), "When registering, the new user should be automatically logged in.");
+        assertTrue(loggedUsers.containsKey(clientChannelMock),
+            "When registering, the new user should be automatically logged in.");
 
         verify(userRepositoryMock, times(1)).addUser(any(RegisteredUser.class));
     }

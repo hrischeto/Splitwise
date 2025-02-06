@@ -32,6 +32,10 @@ public class Group {
         return Collections.unmodifiableSet(members);
     }
 
+    public UUID id() {
+        return id;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
