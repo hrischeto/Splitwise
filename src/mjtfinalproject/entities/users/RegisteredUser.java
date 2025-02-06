@@ -46,6 +46,14 @@ public class RegisteredUser {
         groups.add(group);
     }
 
+    public boolean isFriend(RegisteredUser user) {
+        if (Objects.isNull(user)) {
+            throw new InvalidEntity("Null user.");
+        }
+
+        return friends.contains(user);
+    }
+
     public String getUsername() {
         return name;
     }

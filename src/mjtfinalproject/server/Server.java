@@ -15,7 +15,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import mjtfinalproject.command.factory.CommandFactory;
-import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.repositories.grouprepository.GroupRepository;
 import mjtfinalproject.repositories.grouprepository.InMemoryGroupRepository;
 import mjtfinalproject.repositories.userrepository.InMemoryUserRepository;

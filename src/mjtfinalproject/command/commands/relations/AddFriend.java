@@ -12,6 +12,7 @@ import java.util.Optional;
 public class AddFriend implements Command {
 
     private static final int INPUT_LENGTH = 1;
+
     private final RegisteredUser user;
     private final String friendToAdd;
     private final UserRepository userRepository;
