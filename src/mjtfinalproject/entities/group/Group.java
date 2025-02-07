@@ -1,6 +1,7 @@
 package mjtfinalproject.entities.group;
 
 import mjtfinalproject.entities.users.RegisteredUser;
+import mjtfinalproject.obligation.Obligation;
 
 import java.util.Collections;
 import java.util.Objects;
@@ -36,6 +37,16 @@ public class Group {
         return id;
     }
 
+    public void splitAmount(double amount, RegisteredUser payingUser, String reason) {
+        validatePaymentDetails(amount, payingUser, reason);
+
+        double amountToPay = amount / members.size();
+        for (RegisteredUser member : members) {
+            member.addNewObligation(new Obligation(payingUser, amountToPay, reason));
+            payingUser.addNewWaitingPayment(member, amountToPay);
+        }
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -56,6 +67,20 @@ public class Group {
 
         if (Objects.isNull(members)) {
             throw new IllegalArgumentException("Set of members was null.");
+        }
+    }
+
+    private void validatePaymentDetails(double amount, RegisteredUser payingUser, String reason) {
+        if (amount < 0.0) {
+            throw new IllegalArgumentException("Amount to split should be positive.");
+        }
+
+        if (Objects.isNull(payingUser)) {
+            throw new IllegalArgumentException("Null paying user.");
+        }
+
+        if (Objects.isNull(reason)) {
+            throw new IllegalArgumentException("Null reason.");
         }
     }
 }

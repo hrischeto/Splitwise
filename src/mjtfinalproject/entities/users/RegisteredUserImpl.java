@@ -10,15 +10,16 @@ import mjtfinalproject.notification.Notification;
 import mjtfinalproject.obligation.Obligation;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class RegisteredUserImpl implements RegisteredUser {
 
     private static final double ALLOWANCE = 0.000001;
+
     private final String name;
     private final int password;
 
@@ -27,7 +28,7 @@ public class RegisteredUserImpl implements RegisteredUser {
     private final Map<RegisteredUser, Double> paymentsToReceive;
 
     private final Set<RegisteredUser> friends;
-    private final Set<Group> groups;
+    private final Map<String, UUID> groups;
 
     public RegisteredUserImpl(String name, String password) {
         validateArguments(name, password);
@@ -39,8 +40,8 @@ public class RegisteredUserImpl implements RegisteredUser {
         obligationsToPay = new ConcurrentHashMap<>();
         paymentsToReceive = new ConcurrentHashMap<>();
 
-        friends = new HashSet<>();
-        groups = new HashSet<>();
+        friends = Collections.newSetFromMap(new ConcurrentHashMap<>());
+        groups = new ConcurrentHashMap<>();
     }
 
     @Override
@@ -55,8 +56,20 @@ public class RegisteredUserImpl implements RegisteredUser {
         if (Objects.isNull(group)) {
             throw new InvalidEntity("Group to join was null.");
         }
+        if (groups.containsKey(group.getName())) {
+            throw new InvalidEntity("User is already in a group with that name.");
+        }
 
-        groups.add(group);
+        groups.put(group.getName(), group.id());
+    }
+
+    @Override
+    public boolean isGroupNameUnique(String name) {
+        if (Objects.isNull(name)) {
+            throw new IllegalArgumentException("null name");
+        }
+
+        return !groups.containsKey(name);
     }
 
     @Override
@@ -66,6 +79,15 @@ public class RegisteredUserImpl implements RegisteredUser {
         }
 
         return friends.contains(user);
+    }
+
+    @Override
+    public UUID getGroup(String groupName) {
+        if (Objects.isNull(groupName)) {
+            throw new IllegalArgumentException("Null group name.");
+        }
+
+        return groups.get(groupName);
     }
 
     @Override

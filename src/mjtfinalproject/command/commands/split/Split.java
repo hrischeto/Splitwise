@@ -42,7 +42,7 @@ public class Split implements Command {
             return CommandMessages.ERROR_MESSAGE + "\"message\": Invalid input for \"split\" command.";
         }
 
-        double amount = getAmount(input[AMOUNT_INDEX]);
+        double amount = getAmount();
         if (amount < 0.0) {
             return CommandMessages.ERROR_MESSAGE + "\"message\": Invalid amount.";
         }
@@ -51,7 +51,7 @@ public class Split implements Command {
         if (friend.isEmpty()) {
             return CommandMessages.ERROR_MESSAGE + " \"message\" : \"No such user.\"";
         }
-        if (payingUser.isFriend(friend.get())) {
+        if (!payingUser.isFriend(friend.get())) {
             return CommandMessages.ERROR_MESSAGE + " \"message\" : \"You are not friends with\"" +
                 friend.get().getUsername();
         }
@@ -63,7 +63,7 @@ public class Split implements Command {
             friend.get().getUsername();
     }
 
-    private double getAmount(String amount) {
+    private double getAmount() {
         double result;
         try {
             result = Double.parseDouble(input[AMOUNT_INDEX]);

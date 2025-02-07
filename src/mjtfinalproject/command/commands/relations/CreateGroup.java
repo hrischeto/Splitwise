@@ -58,13 +58,18 @@ public class CreateGroup implements Command {
         }
         members.add(creatingUser);
 
+        for (RegisteredUser member : members) {
+            if (member.isGroupNameUnique(input[GROUP_NAME_INDEX])) {
+                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + member.getUsername() +
+                    " already has a group with that name.\"";
+            }
+        }
         Group group = new Group(input[GROUP_NAME_INDEX], members);
         groupRepository.addGroup(group);
 
         for (RegisteredUser member : members) {
             member.addGroup(group);
         }
-
         return CommandMessages.OK_MESSAGE + " \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
     }
 

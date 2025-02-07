@@ -5,6 +5,7 @@ import mjtfinalproject.notification.Notification;
 import mjtfinalproject.obligation.Obligation;
 
 import java.util.Set;
+import java.util.UUID;
 
 public interface RegisteredUser {
     void addFriend(RegisteredUser friendToAdd);
@@ -12,6 +13,10 @@ public interface RegisteredUser {
     void addGroup(Group group);
 
     boolean isFriend(RegisteredUser user);
+
+    UUID getGroup(String groupName);
+
+    boolean isGroupNameUnique(String name);
 
     String getUsername();
 

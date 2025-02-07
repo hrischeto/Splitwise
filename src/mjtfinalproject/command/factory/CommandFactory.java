@@ -7,6 +7,7 @@ import mjtfinalproject.command.commands.profilemanagement.Register;
 import mjtfinalproject.command.commands.relations.AddFriend;
 import mjtfinalproject.command.commands.relations.CreateGroup;
 import mjtfinalproject.command.commands.server.StopServer;
+import mjtfinalproject.command.commands.split.Split;
 import mjtfinalproject.logmanager.LogManager;
 import mjtfinalproject.logmanager.ParallelLogManager;
 import mjtfinalproject.repositories.Repository;
@@ -65,6 +66,7 @@ public class CommandFactory {
             case ADD_FRIEND,  CREATE_GROUP-> relationsCommand(commandTitle, args, clientChannel);
             case STOP_SERVER ->
                 logManager.isUserLogged(clientChannel) ? new StopServer(logManager.getUser(clientChannel)) : new BadCommand();
+            case SPLIT, SPLIT_GROUP -> splitCommand(commandTitle, args, clientChannel);
             default -> new BadCommand();
         };
     }
@@ -89,6 +91,14 @@ public class CommandFactory {
                 new CreateGroup(userRepository, groupRepository, logManager.getUser(clientChannel), args) : new BadCommand();
             case ADD_FRIEND -> logManager.isUserLogged(clientChannel) ?
                 new AddFriend(logManager.getUser(clientChannel), userRepository, args) : new BadCommand();
+            default -> new BadCommand();
+        };
+    }
+
+    private Command splitCommand(String commandTitle, String[] args, SocketChannel clientChannel) {
+        return switch (commandTitle) {
+            case SPLIT -> logManager.isUserLogged(clientChannel) ?
+                new Split(logManager.getUser(clientChannel), userRepository, args): new BadCommand();
             default -> new BadCommand();
         };
     }
