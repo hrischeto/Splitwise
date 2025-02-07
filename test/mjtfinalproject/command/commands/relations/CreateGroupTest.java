@@ -1,5 +1,6 @@
 package mjtfinalproject.command.commands.relations;
 
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.repositories.grouprepository.GroupRepository;
 import mjtfinalproject.repositories.userrepository.UserRepository;
@@ -44,7 +45,7 @@ public class CreateGroupTest {
 
     @Test
     void testNotEnoughArgumentsInInput() {
-        assertTrue(createGroupWithShortInput.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(createGroupWithShortInput.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When user input does not have enough arguments, a negative message is returned.");
     }
 
@@ -58,7 +59,7 @@ public class CreateGroupTest {
 
         String result = createGroup.execute();
 
-        assertTrue(result.contains("\"status\":\"OK\""),
+        assertTrue(result.contains(CommandMessages.OK_MESSAGE.toString()),
             "When a group is created successfully, a positive message should be returned.");
 
         verify(creatingUserMock, times(1)).addGroup(any());
@@ -70,7 +71,7 @@ public class CreateGroupTest {
     void testAUserNotExisting() {
         when(userRepositoryMock.getUser("user1")).thenReturn(Optional.empty());
 
-        assertTrue(createGroup.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(createGroup.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When an unregistered user is passed, a negative message should be returned.");
 
         verify(creatingUserMock, times(0)).addGroup(any());

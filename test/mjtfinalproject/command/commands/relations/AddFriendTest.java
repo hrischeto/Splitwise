@@ -1,5 +1,6 @@
 package mjtfinalproject.command.commands.relations;
 
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.InvalidEntity;
 import mjtfinalproject.repositories.userrepository.UserRepository;
@@ -41,7 +42,7 @@ public class AddFriendTest {
 
     @Test
     void testWrongLengthInput() {
-        assertTrue(addFriendWrongLengthInput.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(addFriendWrongLengthInput.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When user input does not have the right quantity of arguments, a negative message is returned.");
     }
 
@@ -51,7 +52,7 @@ public class AddFriendTest {
         Optional<RegisteredUser> optionalFriend = Optional.of(validFriendMock);
         when(userRepositoryMock.getUser(addFriend.getFriendToAdd())).thenReturn(optionalFriend);
 
-        assertTrue(addFriend.execute().contains("\"status\":\"OK\""),
+        assertTrue(addFriend.execute().contains(CommandMessages.OK_MESSAGE.toString()),
             "When successfully adding a friend, a positive message should be returned");
 
         verify(userMock, times(1)).addFriend(validFriendMock);
@@ -62,7 +63,7 @@ public class AddFriendTest {
     void testNonexistentFriend() {
         when(userRepositoryMock.getUser(addFriend.getFriendToAdd())).thenReturn(Optional.empty());
 
-        assertTrue(addFriend.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(addFriend.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When user to be added as a friend is not registered, a negative message should be returned.");
 
         verifyNoInteractions(userMock);
@@ -74,7 +75,7 @@ public class AddFriendTest {
         when(userRepositoryMock.getUser(addFriend.getFriendToAdd())).thenReturn(optionalFriend);
         doThrow(InvalidEntity.class).when(userMock).addFriend(userMock);
 
-        assertTrue(addFriend.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(addFriend.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When a user tries to add themselves as a friend, a negative message should be returned.");
     }
 
