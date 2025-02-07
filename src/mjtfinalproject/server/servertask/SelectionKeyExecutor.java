@@ -2,6 +2,7 @@ package mjtfinalproject.server.servertask;
 
 import mjtfinalproject.command.factory.CommandFactory;
 import mjtfinalproject.exceptions.NetworkException;
+import mjtfinalproject.server.Server;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -14,19 +15,23 @@ import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
 public class SelectionKeyExecutor implements Runnable {
+    private static final String STOP_COMMAND = "stop";
 
     private final SelectionKey key;
     private final ByteBuffer buffer;
     private final CommandFactory commandFactory;
     private final Selector selector;
+    private final Server server;
 
-    public SelectionKeyExecutor(SelectionKey key, ByteBuffer buffer, CommandFactory commandFactory, Selector selector) {
-        validateArguments(key, buffer, commandFactory, selector);
+    public SelectionKeyExecutor(SelectionKey key, ByteBuffer buffer, CommandFactory commandFactory, Selector selector,
+                                Server server) {
+        validateArguments(key, buffer, commandFactory, selector, server);
 
         this.key = key;
         this.buffer = buffer;
         this.commandFactory = commandFactory;
         this.selector = selector;
+        this.server = server;
     }
 
     @Override
@@ -38,7 +43,7 @@ public class SelectionKeyExecutor implements Runnable {
                 accept(selector, key);
             }
         } catch (IOException e) {
-            throw new UncheckedIOException("Error while processing client request.", e);
+            throw new UncheckedIOException(e.getMessage(), e);
         }
     }
 
@@ -50,6 +55,11 @@ public class SelectionKeyExecutor implements Runnable {
         }
 
         String output = commandFactory.newCommand(clientInput, clientChannel).execute();
+        if (output.equals(STOP_COMMAND)) {
+            server.stop();
+            return;
+        }
+
         writeClientOutput(clientChannel, output);
 
     }
@@ -87,7 +97,8 @@ public class SelectionKeyExecutor implements Runnable {
         clientChannel.write(buffer);
     }
 
-    void validateArguments(SelectionKey key, ByteBuffer buffer, CommandFactory commandFactory, Selector selector) {
+    void validateArguments(SelectionKey key, ByteBuffer buffer, CommandFactory commandFactory, Selector selector,
+                           Server server) {
         if (Objects.isNull(key)) {
             throw new NetworkException("Selection key was null.");
         }
@@ -99,8 +110,13 @@ public class SelectionKeyExecutor implements Runnable {
         if (Objects.isNull(commandFactory)) {
             throw new NetworkException("Command factory was null.");
         }
+
         if (Objects.isNull(selector)) {
             throw new NetworkException("Selector was null.");
+        }
+
+        if (Objects.isNull(server)) {
+            throw new NetworkException("Server was null.");
         }
     }
 }

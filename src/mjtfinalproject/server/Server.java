@@ -7,10 +7,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
-import java.nio.channels.SocketChannel;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -25,9 +22,6 @@ public class Server {
 
     private static final int BUFFER_SIZE = 1024;
     private static final String HOST = "localhost";
-
-    private static final String ADMIN_USERNAME = System.getenv("SplitwiseAdminUsername");
-    private static final String ADMIN_PASSWORD = System.getenv("SplitwiseAdminPassword");
 
     private final int port;
 
@@ -68,7 +62,7 @@ public class Server {
                     while (keyIterator.hasNext()) {
                         SelectionKey key = keyIterator.next();
 
-                        executor.execute(new SelectionKeyExecutor(key, buffer, commandFactory, selector));
+                        executor.execute(new SelectionKeyExecutor(key, buffer, commandFactory, selector, this));
 
                         keyIterator.remove();
                     }

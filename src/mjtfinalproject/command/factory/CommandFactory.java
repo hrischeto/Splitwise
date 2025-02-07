@@ -4,7 +4,11 @@ import mjtfinalproject.command.commands.badcommand.BadCommand;
 import mjtfinalproject.command.Command;
 import mjtfinalproject.command.commands.profilemanagement.LogIn;
 import mjtfinalproject.command.commands.profilemanagement.Register;
-import mjtfinalproject.entities.users.RegisteredUser;
+import mjtfinalproject.command.commands.relations.AddFriend;
+import mjtfinalproject.command.commands.relations.CreateGroup;
+import mjtfinalproject.command.commands.server.StopServer;
+import mjtfinalproject.logmanager.LogManager;
+import mjtfinalproject.logmanager.ParallelLogManager;
 import mjtfinalproject.repositories.Repository;
 import mjtfinalproject.repositories.grouprepository.GroupRepository;
 import mjtfinalproject.repositories.userrepository.UserRepository;
@@ -12,9 +16,7 @@ import mjtfinalproject.repositories.userrepository.UserRepository;
 import java.nio.channels.SocketChannel;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class CommandFactory {
 
@@ -38,7 +40,7 @@ public class CommandFactory {
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
 
-    private final Map<SocketChannel, RegisteredUser> loggedUsers;
+    private final LogManager logManager;
 
     public CommandFactory(GroupRepository groupRepository, UserRepository userRepository) {
         validateRepository(groupRepository);
@@ -47,20 +49,22 @@ public class CommandFactory {
         this.groupRepository = groupRepository;
         this.userRepository = userRepository;
 
-        loggedUsers = new ConcurrentHashMap<>();
+        logManager = new ParallelLogManager();
     }
 
-    public Command newCommand(String input, SocketChannel clientChanel) {
+    public Command newCommand(String input, SocketChannel clientChannel) {
         List<String> tokens = Arrays.stream(input.split(SEPARATOR))
             .map(String::strip)
             .toList();
 
         String[] args = tokens.subList(1, tokens.size()).toArray(new String[0]);
-
         String commandTitle = tokens.getFirst();
+
         return switch (commandTitle) {
-            case REGISTER -> new Register(userRepository, loggedUsers, clientChanel, args);
-            case LOGIN -> new LogIn(userRepository, loggedUsers, clientChanel, args);
+            case REGISTER, LOGIN -> profileCommand(commandTitle, args, clientChannel);
+            case ADD_FRIEND,  CREATE_GROUP-> relationsCommand(commandTitle, args, clientChannel);
+            case STOP_SERVER ->
+                logManager.isUserLogged(clientChannel) ? new StopServer(logManager.getUser(clientChannel)) : new BadCommand();
             default -> new BadCommand();
         };
     }
@@ -69,5 +73,23 @@ public class CommandFactory {
         if (Objects.isNull(repo)) {
             throw new IllegalArgumentException("Null repository.");
         }
+    }
+
+    private Command profileCommand(String commandTitle, String[] args, SocketChannel clientChannel) {
+        return switch (commandTitle) {
+            case REGISTER -> new Register(userRepository, logManager, clientChannel, args);
+            case LOGIN -> new LogIn(userRepository, logManager, clientChannel, args);
+            default -> new BadCommand();
+        };
+    }
+
+    private Command relationsCommand(String commandTitle, String[] args, SocketChannel clientChannel) {
+        return switch (commandTitle) {
+            case CREATE_GROUP -> logManager.isUserLogged(clientChannel) ?
+                new CreateGroup(userRepository, groupRepository, logManager.getUser(clientChannel), args) : new BadCommand();
+            case ADD_FRIEND -> logManager.isUserLogged(clientChannel) ?
+                new AddFriend(logManager.getUser(clientChannel), userRepository, args) : new BadCommand();
+            default -> new BadCommand();
+        };
     }
 }

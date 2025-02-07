@@ -1,13 +1,14 @@
 package mjtfinalproject.command.commands.profilemanagement;
 
 import mjtfinalproject.command.Command;
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.command.commands.profilemanagement.passwordencryptor.PasswordEncryptor;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
+import mjtfinalproject.logmanager.LogManager;
 import mjtfinalproject.repositories.userrepository.UserRepository;
 
 import java.nio.channels.SocketChannel;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -20,15 +21,15 @@ public class LogIn implements Command {
 
     protected final UserRepository userRepository;
 
-    protected final Map<SocketChannel, RegisteredUser> loggedUsers;
+    protected final LogManager logManager;
     protected final SocketChannel clientChannel;
 
-    public LogIn(UserRepository userRepository, Map<SocketChannel, RegisteredUser> loggedUsers,
+    public LogIn(UserRepository userRepository, LogManager logManager,
                  SocketChannel clientChannel, String... input) {
-        validateInput(userRepository, loggedUsers, clientChannel, input);
+        validateInput(userRepository, logManager, clientChannel, input);
 
         this.userRepository = userRepository;
-        this.loggedUsers = loggedUsers;
+        this.logManager = logManager;
         this.clientChannel = clientChannel;
 
         if (input.length != INPUT_LENGTH) {
@@ -43,31 +44,32 @@ public class LogIn implements Command {
     @Override
     public String execute() {
         if (Objects.isNull(username) || Objects.isNull(password)) {
-            return "\"status\":\"ERROR\", \"message\":\"Invalid input for \"login\" command.";
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"Invalid input for \"login\" command.";
         }
 
         Optional<RegisteredUser> user = userRepository.getUser(username);
         if (user.isPresent()) {
             if (user.get().getPassword() == PasswordEncryptor.encryptPassword(password)) {
-                loggedUsers.put(clientChannel, user.get());
-                return "\"status\":\"OK\", \"message\":\"User logged in successfully!\"";
+                logManager.logUser(clientChannel, user.get());
+                
+                return CommandMessages.OK_MESSAGE + " \"message\":\"User logged in successfully!\"";
             }
 
-            return  "\"status\":\"ERROR\", \"message\":\"Wrong password!\"";
+            return  CommandMessages.ERROR_MESSAGE + " \"message\":\"Wrong password!\"";
         }
 
-        return "\"status\":\"ERROR\", \"message\":\"User with such username does not exists." +
+        return CommandMessages.ERROR_MESSAGE + " \"message\":\"User with such username does not exists." +
             " Try again with a different username!\"";
     }
 
-    void validateInput(UserRepository userRepository, Map<SocketChannel, RegisteredUser> loggedUsers,
+    private void validateInput(UserRepository userRepository, LogManager logManager,
                        SocketChannel clientChannel, String... input) {
         if (Objects.isNull(userRepository)) {
             throw new FailedCommandCreationException("User repository was null.");
         }
 
-        if (Objects.isNull(loggedUsers)) {
-            throw new FailedCommandCreationException("Logged users map was null.");
+        if (Objects.isNull(logManager)) {
+            throw new FailedCommandCreationException("Log manager was null.");
         }
 
         if (Objects.isNull(clientChannel)) {
@@ -78,4 +80,5 @@ public class LogIn implements Command {
             throw new FailedCommandCreationException("User input for \"register\" command was null");
         }
     }
+
 }

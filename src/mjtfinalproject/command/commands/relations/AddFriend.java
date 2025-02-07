@@ -1,6 +1,7 @@
 package mjtfinalproject.command.commands.relations;
 
 import mjtfinalproject.command.Command;
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
 import mjtfinalproject.exceptions.InvalidEntity;
@@ -34,12 +35,12 @@ public class AddFriend implements Command {
     @Override
     public String execute() {
         if (Objects.isNull(friendToAdd)) {
-            return "\"status\":\"ERROR\", \"message\":\"Invalid input for \"add-friend\" command.";
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"Invalid input for \"add-friend\" command.";
         }
 
         Optional<RegisteredUser> optionalFriend = userRepository.getUser(friendToAdd);
         if (optionalFriend.isEmpty()) {
-            return "\"status\":\"ERROR\", \"message\":\"No such user found\"";
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"No such user found\"";
         }
 
         RegisteredUser friendUser = optionalFriend.get();
@@ -47,10 +48,10 @@ public class AddFriend implements Command {
             user.addFriend(friendUser);
             friendUser.addFriend(user);
         } catch (InvalidEntity e) {
-            return "\"status\":\"ERROR\", \"message\":" + e.getMessage();
+            return CommandMessages.ERROR_MESSAGE + " \"message\":" + e.getMessage();
         }
 
-        return "\"status\":\"OK\", \"message\":\"You are friends with \"" + friendUser.getUsername() + "!";
+        return CommandMessages.OK_MESSAGE + " \"message\":\"You are friends with \"" + friendUser.getUsername() + "!";
     }
 
     private void validateArguments(RegisteredUser user, UserRepository userRepository, String... input) {

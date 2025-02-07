@@ -1,98 +1,29 @@
 package mjtfinalproject.entities.users;
 
-import mjtfinalproject.command.commands.profilemanagement.passwordencryptor.PasswordEncryptor;
 import mjtfinalproject.entities.group.Group;
-import mjtfinalproject.exceptions.InvalidEntity;
+import mjtfinalproject.notification.Notification;
 import mjtfinalproject.obligation.Obligation;
 
-import java.util.HashSet;
-import java.util.Objects;
 import java.util.Set;
 
-public class RegisteredUser {
+public interface RegisteredUser {
+    void addFriend(RegisteredUser friendToAdd);
 
-    private final String name;
-    private final int password;
-    private final Set<Obligation> obligationsToPay;
-    private final Set<Obligation> paymentsToReceive;
+    void addGroup(Group group);
 
-    private final Set<RegisteredUser> friends;
-    private final Set<Group> groups;
+    boolean isFriend(RegisteredUser user);
 
-    public RegisteredUser(String name, String password) {
-        validateArguments(name, password);
+    String getUsername();
 
-        this.name = name;
-        this.password = PasswordEncryptor.encryptPassword(password);
+    int getPassword();
 
-        obligationsToPay = new HashSet<>();
-        paymentsToReceive = new HashSet<>();
+    Set<Notification> getNewNotifications();
 
-        friends = new HashSet<>();
-        groups = new HashSet<>();
-    }
+    void deleteNotifications();
 
-    public void addFriend(RegisteredUser friendToAdd) {
-        validateFriend(friendToAdd);
+    void addNewObligation(Obligation obligation);
 
-        friends.add(friendToAdd);
-    }
+    void removeObligation(RegisteredUser user, double amount);
 
-    public void addGroup(Group group) {
-        if (Objects.isNull(group)) {
-            throw new InvalidEntity("Group to join was null.");
-        }
-
-        groups.add(group);
-    }
-
-    public boolean isFriend(RegisteredUser user) {
-        if (Objects.isNull(user)) {
-            throw new InvalidEntity("Null user.");
-        }
-
-        return friends.contains(user);
-    }
-
-    public String getUsername() {
-        return name;
-    }
-
-    public int getPassword() {
-        return password;
-    }
-
-    private void validateArguments(String name, String password) {
-        if (Objects.isNull(name)) {
-            throw new IllegalArgumentException("Null name.");
-        }
-
-        if (Objects.isNull(password)) {
-            throw new IllegalArgumentException("Null password.");
-        }
-    }
-
-    private void validateFriend(RegisteredUser friendToAdd) {
-        if (Objects.isNull(friendToAdd)) {
-            throw new InvalidEntity("User to add as friend was null");
-        }
-
-        if (friendToAdd.equals(this)) {
-            throw new InvalidEntity("Cannot add yourself as a friend");
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        RegisteredUser that = (RegisteredUser) o;
-        return Objects.equals(name, that.name);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hashCode(name);
-    }
-
+    void addNewWaitingPayment(RegisteredUser user, double amount);
 }

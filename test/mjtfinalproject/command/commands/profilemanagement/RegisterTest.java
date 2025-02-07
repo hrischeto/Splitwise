@@ -1,6 +1,8 @@
 package mjtfinalproject.command.commands.profilemanagement;
 
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.users.RegisteredUser;
+import mjtfinalproject.logmanager.LogManager;
 import mjtfinalproject.repositories.userrepository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,9 +11,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.nio.channels.SocketChannel;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -25,8 +25,8 @@ public class RegisterTest {
 
     @Mock
     private UserRepository userRepositoryMock;
-
-    private Map<SocketChannel, RegisteredUser> loggedUsers;
+    @Mock
+    private LogManager logManagerMock;
     @Mock
     private SocketChannel clientChannelMock;
 
@@ -38,14 +38,13 @@ public class RegisterTest {
         String[] input = new String[] {"username", "password"};
         String[] wrongInput = new String[] {"username", "password", "something"};
 
-        loggedUsers = new ConcurrentHashMap<>();
-        register = new Register(userRepositoryMock, loggedUsers, clientChannelMock, input);
-        registerWrongInput = new Register(userRepositoryMock, loggedUsers, clientChannelMock, wrongInput);
+        register = new Register(userRepositoryMock, logManagerMock, clientChannelMock, input);
+        registerWrongInput = new Register(userRepositoryMock, logManagerMock, clientChannelMock, wrongInput);
     }
 
     @Test
     void testWrongNumberOfArguments() {
-        assertTrue(registerWrongInput.execute().contains("\"status\":\"ERROR\""),
+        assertTrue(registerWrongInput.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "\"When user input has wrong input length, a negative message is returned.\"");
     }
 
@@ -55,11 +54,10 @@ public class RegisterTest {
 
         String result = register.execute();
 
-        assertTrue(result.contains("\"status\":\"OK\""),
+        assertTrue(result.contains(CommandMessages.OK_MESSAGE.toString()),
             "When successfully registering a user, a positive message should be returned.");
-        assertTrue(loggedUsers.containsKey(clientChannelMock),
-            "When registering, the new user should be automatically logged in.");
 
+        verify(logManagerMock, times(1)).logUser(any(), any());
         verify(userRepositoryMock, times(1)).addUser(any(RegisteredUser.class));
     }
 
@@ -70,8 +68,10 @@ public class RegisterTest {
 
         when(userRepositoryMock.getUser(register.username)).thenReturn(optionalUser);
 
-        assertTrue(register.execute().contains("\"status\":\"ERROR\""),
-            "When trying to register with already used name, a negative message should be thrown.");
+        assertTrue(register.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
+            "When trying to register with already used name, a negative message should be returned.");
+
+        verify(logManagerMock, times(0)).logUser(any(), any());
     }
 
 }

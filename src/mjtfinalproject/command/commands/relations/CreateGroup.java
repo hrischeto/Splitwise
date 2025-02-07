@@ -1,6 +1,7 @@
 package mjtfinalproject.command.commands.relations;
 
 import mjtfinalproject.command.Command;
+import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.group.Group;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
@@ -43,7 +44,7 @@ public class CreateGroup implements Command {
     @Override
     public String execute() {
         if (Objects.isNull(input)) {
-            return "\"status\":\"ERROR\", \"message\":\"Invalid input for \"create-group\" command.";
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"Invalid input for \"create-group\" command.";
         }
 
         Set<RegisteredUser> members = new HashSet<>();
@@ -51,7 +52,7 @@ public class CreateGroup implements Command {
             Optional<RegisteredUser> user = userRepository.getUser(input[i]);
 
             if (user.isEmpty()) {
-                return "\"status\":\"ERROR\", \"message\":\"User " + input[i] + " does not exist.\"";
+                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + input[i] + " does not exist.\"";
             }
             members.add(user.get());
         }
@@ -60,11 +61,11 @@ public class CreateGroup implements Command {
         Group group = new Group(input[GROUP_NAME_INDEX], members);
         groupRepository.addGroup(group);
 
-        for (RegisteredUser member:members) {
+        for (RegisteredUser member : members) {
             member.addGroup(group);
         }
 
-        return "\"status\":\"OK\", \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
+        return CommandMessages.OK_MESSAGE + " \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
     }
 
     private void validateArguments(UserRepository userRepository, GroupRepository groupRepository,
@@ -79,7 +80,7 @@ public class CreateGroup implements Command {
             throw new FailedCommandCreationException("User input was null.");
         }
         if (Objects.isNull(creatingUser)) {
-            throw new FailedCommandCreationException("User creating group is null.");
+            throw new FailedCommandCreationException("User was null");
         }
     }
 
