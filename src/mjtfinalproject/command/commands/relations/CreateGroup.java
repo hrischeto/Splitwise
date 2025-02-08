@@ -3,6 +3,7 @@ package mjtfinalproject.command.commands.relations;
 import mjtfinalproject.command.Command;
 import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.group.Group;
+import mjtfinalproject.entities.group.GroupImpl;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
 import mjtfinalproject.repositories.grouprepository.GroupRepository;
@@ -48,29 +49,44 @@ public class CreateGroup implements Command {
         }
 
         Set<RegisteredUser> members = new HashSet<>();
-        for (int i = 1; i < input.length; i++) {
-            Optional<RegisteredUser> user = userRepository.getUser(input[i]);
-
-            if (user.isEmpty()) {
-                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + input[i] + " does not exist.\"";
-            }
-            members.add(user.get());
+        String membersValidation = getMembers(members);
+        if (Objects.nonNull(membersValidation)) {
+            return membersValidation;
         }
-        members.add(creatingUser);
 
-        for (RegisteredUser member : members) {
-            if (member.isGroupNameUnique(input[GROUP_NAME_INDEX])) {
-                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + member.getUsername() +
-                    " already has a group with that name.\"";
-            }
-        }
-        Group group = new Group(input[GROUP_NAME_INDEX], members);
+        Group group = new GroupImpl(input[GROUP_NAME_INDEX], members);
         groupRepository.addGroup(group);
 
         for (RegisteredUser member : members) {
             member.addGroup(group);
         }
         return CommandMessages.OK_MESSAGE + " \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
+    }
+
+    private String getMembers(Set<RegisteredUser> members) {
+        if (Objects.isNull(members)) {
+            throw new IllegalArgumentException("Null member set");
+        }
+
+        for (int i = 1; i < input.length; i++) {
+            Optional<RegisteredUser> user = userRepository.getUser(input[i]);
+
+            if (user.isEmpty()) {
+                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + input[i] + " does not exist.\"";
+            }
+            if (!user.get().isGroupNameUnique(input[GROUP_NAME_INDEX])) {
+                return CommandMessages.ERROR_MESSAGE + " \"message\":\"User " + user.get().getUsername() +
+                    " already has a group with that name.\"";
+            }
+            members.add(user.get());
+        }
+
+        if (!creatingUser.isGroupNameUnique(input[GROUP_NAME_INDEX])) {
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"You already have a group with this name\"";
+        }
+        members.add(creatingUser);
+
+        return null;
     }
 
     private void validateArguments(UserRepository userRepository, GroupRepository groupRepository,
