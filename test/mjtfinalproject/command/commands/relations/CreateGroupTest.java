@@ -31,31 +31,35 @@ public class CreateGroupTest {
     private UserRepository userRepositoryMock;
 
     private CreateGroup createGroup;
-    private CreateGroup createGroupWithShortInput;
 
     @BeforeEach
     void setUp() {
         String[] input = new String[] {"name", "user1", "user2"};
-        String[] shortInput = new String[] {"name"};
 
         createGroup = new CreateGroup(userRepositoryMock, groupRepositoryMock, creatingUserMock, input);
-        createGroupWithShortInput =
-            new CreateGroup(userRepositoryMock, groupRepositoryMock, creatingUserMock, shortInput);
     }
 
     @Test
     void testNotEnoughArgumentsInInput() {
+        String[] shortInput = new String[] {"name"};
+        CreateGroup createGroupWithShortInput =
+            new CreateGroup(userRepositoryMock, groupRepositoryMock, creatingUserMock, shortInput);
+
         assertTrue(createGroupWithShortInput.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When user input does not have enough arguments, a negative message is returned.");
     }
 
     @Test
-    void testAllValidUsers() {
+    void testAllValidArguments() {
         RegisteredUser user1 = mock(RegisteredUser.class);
         RegisteredUser user2 = mock(RegisteredUser.class);
 
         when(userRepositoryMock.getUser("user1")).thenReturn(Optional.of(user1));
         when(userRepositoryMock.getUser("user2")).thenReturn(Optional.of(user2));
+
+        when(user1.isGroupNameUnique("name")).thenReturn(true);
+        when(creatingUserMock.isGroupNameUnique("name")).thenReturn(true);
+        when(user2.isGroupNameUnique("name")).thenReturn(true);
 
         String result = createGroup.execute();
 
@@ -75,5 +79,42 @@ public class CreateGroupTest {
             "When an unregistered user is passed, a negative message should be returned.");
 
         verify(creatingUserMock, times(0)).addGroup(any());
+    }
+
+    @Test
+    void testNotUniqueGroupNameForUser() {
+        RegisteredUser user1 = mock(RegisteredUser.class);
+        when(userRepositoryMock.getUser("user1")).thenReturn(Optional.of(user1));
+
+        when(user1.isGroupNameUnique("name")).thenReturn(false);
+
+        String result = createGroup.execute();
+
+        assertTrue(result.contains(CommandMessages.ERROR_MESSAGE.toString()),
+            "When a group is not unique for any user, a negative message should be returned.");
+
+        verify(creatingUserMock, times(0)).addGroup(any());
+        verify(user1, times(0)).addGroup(any());
+    }
+
+    @Test
+    void testNotUniqueGroupNameForCreatingUser() {
+        RegisteredUser user1 = mock(RegisteredUser.class);
+        when(userRepositoryMock.getUser("user1")).thenReturn(Optional.of(user1));
+
+        RegisteredUser user2 = mock(RegisteredUser.class);
+        when(userRepositoryMock.getUser("user2")).thenReturn(Optional.of(user2));
+        when(user1.isGroupNameUnique("name")).thenReturn(true);
+        when(user2.isGroupNameUnique("name")).thenReturn(true);
+        when(creatingUserMock.isGroupNameUnique("name")).thenReturn(false);
+
+        String result = createGroup.execute();
+
+        assertTrue(result.contains(CommandMessages.ERROR_MESSAGE.toString()),
+            "When a group is not unique for any user, a negative message should be returned.");
+
+        verify(creatingUserMock, times(0)).addGroup(any());
+        verify(user1, times(0)).addGroup(any());
+        verify(user2, times(0)).addGroup(any());
     }
 }
