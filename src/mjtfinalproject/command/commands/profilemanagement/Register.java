@@ -28,7 +28,8 @@ public class Register extends LogIn {
 
             logManager.logUser(clientChannel, user);
 
-            return CommandMessages.OK_MESSAGE + " \"message\":\"User registered and logged successfully!\"";
+            return CommandMessages.OK_MESSAGE + " \"message\":\"User registered and logged successfully!\"\n" +
+                user.getNewNotifications();
         }
 
         return CommandMessages.ERROR_MESSAGE + " \"message\":\"User with such username already exists." +

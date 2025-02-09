@@ -19,6 +19,6 @@ public class GetStatus implements Command {
 
     @Override
     public String execute() {
-        return null;
+        return user.getStatus();
     }
 }

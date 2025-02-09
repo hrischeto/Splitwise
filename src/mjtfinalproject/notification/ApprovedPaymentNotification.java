@@ -17,8 +17,8 @@ public class ApprovedPaymentNotification implements Notification {
     }
 
     @Override
-    public String getNotification() {
-        return user.getUsername() + " approved your payment for " + amount + "LV.";
+    public String toString() {
+        return user.getUsername() + " approved your payment for " + amount + "LV.\n";
     }
 
     private void validateArguments(RegisteredUser user, double amount) {

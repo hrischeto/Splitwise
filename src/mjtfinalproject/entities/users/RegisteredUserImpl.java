@@ -265,13 +265,74 @@ public class RegisteredUserImpl implements RegisteredUser {
     }
 
     @Override
-    public Set<Notification> getNewNotifications() {
-        return Collections.unmodifiableSet(newNotificationsFromFriends);
+    public String getNewNotifications() {
+        if (newNotificationsFromFriends.isEmpty() && newNotificationsFromGroups.isEmpty()) {
+            return "No new notifications";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("*Friends:\n");
+        newNotificationsFromFriends.forEach(notification -> sb.append(notification.toString()));
+
+        sb.append("*Groups:\n");
+        newNotificationsFromGroups.keySet().forEach(key -> {
+            sb.append(key).append(":\n");
+            newNotificationsFromGroups.get(key).forEach(notification -> sb.append(notification.toString()));
+        });
+
+        newNotificationsFromFriends.clear();
+        return sb.toString();
     }
 
     @Override
-    public void deleteNotifications() {
-        newNotificationsFromFriends.clear();
+    public String getStatus() {
+        if (obligationsToPay.isEmpty() && paymentsToReceive.isEmpty() && obligationsToPayInGroups.isEmpty() &&
+            paymentsToReceiveInGroups.isEmpty()) {
+            return "Noting to show.";
+        }
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("*Friends:\n");
+        obligationsToPay.keySet()
+            .forEach(key -> sb.append(generateObligationSentence(key)));
+        paymentsToReceive.keySet()
+            .forEach(key -> sb.append(generateWaitingPaymentSentence(key)));
+
+        sb.append("*Groups:\n");
+        sb.append(generateGroupObligationSentence());
+        sb.append(generateAnticipatedGroupPayments());
+
+        return sb.toString();
+    }
+
+    private String generateObligationSentence(String username) {
+        return "You owe " + username + obligationsToPay.get(username) + "LV.\n";
+    }
+
+    private String generateWaitingPaymentSentence(String username) {
+        return username + " ows you " + paymentsToReceive.get(username) + "LV.\n";
+    }
+
+    private String generateGroupObligationSentence() {
+        StringBuilder sb = new StringBuilder();
+        obligationsToPayInGroups.keySet().forEach(key -> {
+            sb.append(key).append(":\n");
+            obligationsToPayInGroups.get(key).keySet()
+                .forEach(groupMember -> sb.append(generateObligationSentence(groupMember)));
+        });
+        return sb.toString();
+    }
+
+    private String generateAnticipatedGroupPayments() {
+        StringBuilder sb = new StringBuilder();
+        paymentsToReceiveInGroups.keySet().forEach(key -> {
+            sb.append(key).append(":\n");
+            paymentsToReceiveInGroups.get(key).keySet()
+                .forEach(groupMember -> sb.append(generateWaitingPaymentSentence(groupMember)));
+        });
+        return sb.toString();
     }
 
     private void validatePayment(RegisteredUser user, double amount) {

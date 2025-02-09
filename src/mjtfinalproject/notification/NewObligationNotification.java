@@ -17,7 +17,7 @@ public class NewObligationNotification implements Notification {
     }
 
     @Override
-    public String getNotification() {
+    public String toString() {
         return obligation.toString();
     }
 }

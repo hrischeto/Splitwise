@@ -22,9 +22,9 @@ public interface RegisteredUser {
 
     int getPassword();
 
-    Set<Notification> getNewNotifications();
+    String getNewNotifications();
 
-    void deleteNotifications();
+    String getStatus();
 
     void addNewObligationToFriend(Obligation obligation);
 

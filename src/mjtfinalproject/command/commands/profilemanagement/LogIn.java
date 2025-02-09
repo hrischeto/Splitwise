@@ -51,11 +51,12 @@ public class LogIn implements Command {
         if (user.isPresent()) {
             if (user.get().getPassword() == PasswordEncryptor.encryptPassword(password)) {
                 logManager.logUser(clientChannel, user.get());
-                
-                return CommandMessages.OK_MESSAGE + " \"message\":\"User logged in successfully!\"";
+
+                return CommandMessages.OK_MESSAGE + " \"message\":\"User logged in successfully!\"\n" +
+                    user.get().getNewNotifications();
             }
 
-            return  CommandMessages.ERROR_MESSAGE + " \"message\":\"Wrong password!\"";
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"Wrong password!\"";
         }
 
         return CommandMessages.ERROR_MESSAGE + " \"message\":\"User with such username does not exists." +
@@ -63,7 +64,7 @@ public class LogIn implements Command {
     }
 
     private void validateInput(UserRepository userRepository, LogManager logManager,
-                       SocketChannel clientChannel, String... input) {
+                               SocketChannel clientChannel, String... input) {
         if (Objects.isNull(userRepository)) {
             throw new FailedCommandCreationException("User repository was null.");
         }
