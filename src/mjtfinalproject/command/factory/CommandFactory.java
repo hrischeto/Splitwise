@@ -2,6 +2,7 @@ package mjtfinalproject.command.factory;
 
 import mjtfinalproject.command.commands.badcommand.BadCommand;
 import mjtfinalproject.command.Command;
+import mjtfinalproject.command.commands.paymentmanagement.ApprovePayment;
 import mjtfinalproject.command.commands.profilemanagement.LogIn;
 import mjtfinalproject.command.commands.profilemanagement.Register;
 import mjtfinalproject.command.commands.relations.AddFriend;
@@ -33,7 +34,6 @@ public class CommandFactory {
     private static final String HELP = "help";
     private static final String HISTORY = "history";
     private static final String LOGOUT = "logout";
-    private static final String MARK_AS_PAYED = "mark-as-payed";
     private static final String SPLIT = "split";
     private static final String SPLIT_GROUP = "split-group";
     private static final String STOP_SERVER = "stop-sever";
@@ -63,10 +63,14 @@ public class CommandFactory {
 
         return switch (commandTitle) {
             case REGISTER, LOGIN -> profileCommand(commandTitle, args, clientChannel);
-            case ADD_FRIEND,  CREATE_GROUP-> relationsCommand(commandTitle, args, clientChannel);
+            case ADD_FRIEND, CREATE_GROUP -> relationsCommand(commandTitle, args, clientChannel);
             case STOP_SERVER ->
-                logManager.isUserLogged(clientChannel) ? new StopServer(logManager.getUser(clientChannel)) : new BadCommand();
+                logManager.isUserLogged(clientChannel) ? new StopServer(logManager.getUser(clientChannel)) :
+                    new BadCommand();
             case SPLIT, SPLIT_GROUP -> splitCommand(commandTitle, args, clientChannel);
+            case APPROVE_PAYMENT -> logManager.isUserLogged(clientChannel) ?
+                new ApprovePayment(logManager.getUser(clientChannel), userRepository, args) : new BadCommand();
+
             default -> new BadCommand();
         };
     }
@@ -88,7 +92,8 @@ public class CommandFactory {
     private Command relationsCommand(String commandTitle, String[] args, SocketChannel clientChannel) {
         return switch (commandTitle) {
             case CREATE_GROUP -> logManager.isUserLogged(clientChannel) ?
-                new CreateGroup(userRepository, groupRepository, logManager.getUser(clientChannel), args) : new BadCommand();
+                new CreateGroup(userRepository, groupRepository, logManager.getUser(clientChannel), args) :
+                new BadCommand();
             case ADD_FRIEND -> logManager.isUserLogged(clientChannel) ?
                 new AddFriend(logManager.getUser(clientChannel), userRepository, args) : new BadCommand();
             default -> new BadCommand();
@@ -98,7 +103,7 @@ public class CommandFactory {
     private Command splitCommand(String commandTitle, String[] args, SocketChannel clientChannel) {
         return switch (commandTitle) {
             case SPLIT -> logManager.isUserLogged(clientChannel) ?
-                new Split(logManager.getUser(clientChannel), userRepository, args): new BadCommand();
+                new Split(logManager.getUser(clientChannel), userRepository, args) : new BadCommand();
             default -> new BadCommand();
         };
     }

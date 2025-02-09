@@ -1,10 +1,10 @@
 package mjtfinalproject.obligation;
 
-import mjtfinalproject.entities.users.RegisteredUser;
+import java.io.Serializable;
 
-public record Obligation(RegisteredUser receiver, double amount, String reason) {
+public record Obligation(String receiver, double amount, String reason) implements Serializable {
     @Override
     public String toString() {
-        return "You owe " + receiver.getUsername() + " " + amount + "LV [" + reason + " ].";
+        return "You owe " + receiver + " " + amount + "LV [" + reason + " ].";
     }
 }

@@ -49,8 +49,8 @@ public class GroupImpl implements Group {
             if (members.equals(payingUser)) {
                 continue;
             }
-            member.addNewObligation(new Obligation(payingUser, amountToPay, reason));
-            payingUser.addNewWaitingPayment(member, amountToPay);
+            member.addNewObligationInGroup(this, new Obligation(payingUser.getUsername(), amountToPay, reason));
+            payingUser.addNewWaitingPaymentFromGroupMember(this, member, amountToPay);
         }
     }
 

@@ -26,9 +26,19 @@ public interface RegisteredUser {
 
     void deleteNotifications();
 
-    void addNewObligation(Obligation obligation);
+    void addNewObligationToFriend(Obligation obligation);
 
-    void removeObligation(RegisteredUser user, double amount);
+    void addNewObligationInGroup(Group group, Obligation obligation);
 
-    void addNewWaitingPayment(RegisteredUser user, double amount);
+    void removeObligationInGroup(Group group, RegisteredUser user, double amount);
+
+    void removeObligationToFriend(RegisteredUser user, double amount);
+
+    boolean markAsPayedFromFriend(RegisteredUser user, double amount);
+
+    void addNewWaitingPaymentFromFriend(RegisteredUser user, double amount);
+
+    void addNewWaitingPaymentFromGroupMember(Group group, RegisteredUser user, double amount);
+
+    boolean markAsPayedFromGroupMember(Group group, RegisteredUser user, double amount);
 }

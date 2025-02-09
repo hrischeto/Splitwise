@@ -56,8 +56,8 @@ public class Split implements Command {
                 friend.get().getUsername();
         }
 
-        friend.get().addNewObligation(new Obligation(payingUser, amount / 2.0, input[REASON_INDEX]));
-        payingUser.addNewWaitingPayment(friend.get(), amount / 2.0);
+        friend.get().addNewObligationToFriend(new Obligation(payingUser.getUsername(), amount / 2.0, input[REASON_INDEX]));
+        payingUser.addNewWaitingPaymentFromFriend(friend.get(), amount / 2.0);
 
         return CommandMessages.OK_MESSAGE + " \"message\" : " + amount + "LV split between you and " +
             friend.get().getUsername();
