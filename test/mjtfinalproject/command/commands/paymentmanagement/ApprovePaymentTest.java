@@ -54,7 +54,7 @@ public class ApprovePaymentTest {
 
     @Test
     void testNegativeAmountToSplit() {
-        String[] negativePriceInput = new String[] {"-1", "friend", "reason"};
+        String[] negativePriceInput = new String[] {"-1", "friend"};
         ApprovePayment negativePricePayment = new ApprovePayment(userMock, userRepositoryMock, negativePriceInput);
 
         assertTrue(negativePricePayment.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
@@ -73,25 +73,39 @@ public class ApprovePaymentTest {
     void testNoSuchObligation() {
         RegisteredUser paid = mock(RegisteredUser.class);
         when(userRepositoryMock.getUser("paid")).thenReturn(Optional.of(paid));
-        when(userMock.markAsPayed(paid, 1.0)).thenReturn(false);
+        when(userMock.isFriend(paid)).thenReturn(true);
+        when(userMock.markAsPayedFromFriend(paid, 1.0)).thenReturn(false);
 
         assertTrue(approvePayment.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When said user does not have any obligations to the approving user, a negative message is returned.");
 
-        verify(paid, times(0)).removeObligation(userMock, 1.0);
+        verify(paid, times(0)).removeObligationToFriend(userMock, 1.0);
     }
 
     @Test
     void testCorrectArguments() {
         RegisteredUser paid = mock(RegisteredUser.class);
         when(userRepositoryMock.getUser("paid")).thenReturn(Optional.of(paid));
-        when(userMock.markAsPayed(paid, 1.0)).thenReturn(true);
+        when(userMock.isFriend(paid)).thenReturn(true);
+        when(userMock.markAsPayedFromFriend(paid, 1.0)).thenReturn(true);
 
         assertTrue(approvePayment.execute().contains(CommandMessages.OK_MESSAGE.toString()),
             "When said obligation is successfully approved, a positive message is returned.");
 
-        verify(paid, times(1)).removeObligation(userMock, 1.0);
-        verify(userMock, times(1)).markAsPayed(paid, 1.0);
+        verify(paid, times(1)).removeObligationToFriend(userMock, 1.0);
+        verify(userMock, times(1)).markAsPayedFromFriend(paid, 1.0);
     }
 
+    @Test
+    void testUserNotFriend() {
+        RegisteredUser paid = mock(RegisteredUser.class);
+        when(userRepositoryMock.getUser("paid")).thenReturn(Optional.of(paid));
+        when(userMock.isFriend(paid)).thenReturn(false);
+
+        assertTrue(approvePayment.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
+            "When users are not friends, a negative message is returned.");
+
+        verify(paid, times(0)).removeObligationToFriend(userMock, 1.0);
+        verify(userMock, times(0)).markAsPayedFromFriend(paid, 1.0);
+    }
 }
