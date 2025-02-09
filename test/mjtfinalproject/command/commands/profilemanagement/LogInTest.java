@@ -64,6 +64,7 @@ public class LogInTest {
             "When successfully logging in a user, a positive message should be returned.");
 
         verify(logManagerMock, times(1)).logUser(clientChannelMock, optionalUser.get());
+        verify(userMock, times(1)).getNewNotifications();
     }
 
     @Test

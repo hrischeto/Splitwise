@@ -83,8 +83,8 @@ public class SplitTest {
         assertTrue(split.execute().contains(CommandMessages.ERROR_MESSAGE.toString()),
             "When splitting with a user which is not a friend, a negative message should be returned");
 
-        verify(payingUserMock, times(0)).addNewWaitingPayment(any(), anyDouble());
-        verify(nonFriend, times(0)).addNewObligation(any());
+        verify(payingUserMock, times(0)).addNewWaitingPaymentFromFriend(any(), anyDouble());
+        verify(nonFriend, times(0)).addNewObligationToFriend(any());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class SplitTest {
         assertTrue(split.execute().contains(CommandMessages.OK_MESSAGE.toString()),
             "When all arguments are correct, a positive message should be returned");
 
-        verify(payingUserMock, times(1)).addNewWaitingPayment(any(), anyDouble());
-        verify(friend, times(1)).addNewObligation(any());
+        verify(payingUserMock, times(1)).addNewWaitingPaymentFromFriend(any(), anyDouble());
+        verify(friend, times(1)).addNewObligationToFriend(any());
     }
 }
