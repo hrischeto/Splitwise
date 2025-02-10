@@ -2,17 +2,9 @@ package mjtfinalproject.notification;
 
 import mjtfinalproject.entities.users.RegisteredUser;
 
-import java.io.IOException;
-import java.io.InvalidClassException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serial;
 import java.util.Objects;
 
 public class ApprovedPaymentNotification implements Notification {
-
-    @Serial
-    private static final long serialVersionUID = 1234L;
 
     private final String user;
     private final double amount;
@@ -26,21 +18,7 @@ public class ApprovedPaymentNotification implements Notification {
 
     @Override
     public String toString() {
-        return user + " approved your payment for " + amount + "LV.\n";
-    }
-
-    @Serial
-    private void writeObject(ObjectOutputStream out) throws IOException {
-        out.defaultWriteObject();
-    }
-
-    @Serial
-    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
-        if (in.readLong() != serialVersionUID ) {
-            throw new InvalidClassException("Unexpected serialVersionUID");
-        }
-
-        in.defaultReadObject();
+        return user + " approved your payment for " + amount + "LV." + System.lineSeparator();
     }
 
     private void validateArguments(RegisteredUser user, double amount) {

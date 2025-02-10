@@ -1,6 +1,6 @@
 package mjtfinalproject.command.commands.info;
 
-import mjtfinalproject.command.Command;
+import mjtfinalproject.command.factory.Command;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
 

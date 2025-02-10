@@ -2,13 +2,9 @@ package mjtfinalproject.notification;
 
 import mjtfinalproject.obligation.Obligation;
 
-import java.io.Serial;
 import java.util.Objects;
 
 public class NewObligationNotification implements Notification {
-
-    @Serial
-    private static final long serialVersionUID = 1234L;
 
     private final String receiver;
     private final double amount;
@@ -26,6 +22,6 @@ public class NewObligationNotification implements Notification {
 
     @Override
     public String toString() {
-        return "You owe " + receiver + " " + amount + "LV [" + reason + " ].\n";
+        return "You owe " + receiver + " " + amount + "LV [" + reason + " ]." + System.lineSeparator();
     }
 }

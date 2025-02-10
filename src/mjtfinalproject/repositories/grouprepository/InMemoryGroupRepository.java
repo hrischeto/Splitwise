@@ -15,8 +15,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryGroupRepository implements GroupRepository {
 
-    private static final String GROUP_DATABASE = "groups.txt";
-
     private final Map<UUID, Group> groups = new ConcurrentHashMap<>();
 
     @Override
@@ -38,11 +36,12 @@ public class InMemoryGroupRepository implements GroupRepository {
     }
 
     @Override
-    public void safeToDatabase() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(GROUP_DATABASE))) {
+    public void safeToDatabase(String database) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(database))) {
             out.writeObject(this);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to safe group repository.", e);
         }
     }
+
 }

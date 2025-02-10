@@ -1,6 +1,6 @@
 package mjtfinalproject.command.commands.badcommand;
 
-import mjtfinalproject.command.Command;
+import mjtfinalproject.command.factory.Command;
 
 public class BadCommand implements Command {
 

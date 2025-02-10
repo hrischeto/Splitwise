@@ -1,7 +1,6 @@
 package mjtfinalproject.command.factory;
 
 import mjtfinalproject.command.commands.badcommand.BadCommand;
-import mjtfinalproject.command.Command;
 import mjtfinalproject.command.commands.info.GetStatus;
 import mjtfinalproject.command.commands.paymentmanagement.ApproveGroupMemberPayment;
 import mjtfinalproject.command.commands.paymentmanagement.ApprovePayment;

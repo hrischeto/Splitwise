@@ -271,13 +271,14 @@ public class RegisteredUserImpl implements RegisteredUser {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator()).append("-Notifications-").append(System.lineSeparator());
 
-        sb.append("*Friends:\n");
+        sb.append("*Friends:").append(System.lineSeparator());
         newNotificationsFromFriends.forEach(notification -> sb.append(notification.toString()));
 
-        sb.append("*Groups:\n");
+        sb.append("*Groups:").append(System.lineSeparator());
         newNotificationsFromGroups.keySet().forEach(key -> {
-            sb.append(key).append(":\n");
+            sb.append(key).append(":").append(System.lineSeparator());
             newNotificationsFromGroups.get(key).forEach(notification -> sb.append(notification.toString()));
         });
 
@@ -293,14 +294,15 @@ public class RegisteredUserImpl implements RegisteredUser {
         }
 
         StringBuilder sb = new StringBuilder();
+        sb.append(System.lineSeparator()).append("-Status-").append(System.lineSeparator());
 
-        sb.append("*Friends:\n");
+        sb.append("*Friends:").append(System.lineSeparator());
         obligationsToPay.keySet()
             .forEach(key -> sb.append(generateObligationSentence(key)));
         paymentsToReceive.keySet()
             .forEach(key -> sb.append(generateWaitingPaymentSentence(key)));
 
-        sb.append("*Groups:\n");
+        sb.append("*Groups:").append(System.lineSeparator());
         sb.append(generateGroupObligationSentence());
         sb.append(generateAnticipatedGroupPayments());
 
@@ -308,17 +310,17 @@ public class RegisteredUserImpl implements RegisteredUser {
     }
 
     private String generateObligationSentence(String username) {
-        return "You owe " + username + obligationsToPay.get(username) + "LV.\n";
+        return "You owe " + username + obligationsToPay.get(username) + "LV." + System.lineSeparator();
     }
 
     private String generateWaitingPaymentSentence(String username) {
-        return username + " ows you " + paymentsToReceive.get(username) + "LV.\n";
+        return username + " ows you " + paymentsToReceive.get(username) + "LV." + System.lineSeparator();
     }
 
     private String generateGroupObligationSentence() {
         StringBuilder sb = new StringBuilder();
         obligationsToPayInGroups.keySet().forEach(key -> {
-            sb.append(key).append(":\n");
+            sb.append(key).append(":").append(System.lineSeparator());
             obligationsToPayInGroups.get(key).keySet()
                 .forEach(groupMember -> sb.append(generateObligationSentence(groupMember)));
         });
@@ -328,7 +330,7 @@ public class RegisteredUserImpl implements RegisteredUser {
     private String generateAnticipatedGroupPayments() {
         StringBuilder sb = new StringBuilder();
         paymentsToReceiveInGroups.keySet().forEach(key -> {
-            sb.append(key).append(":\n");
+            sb.append(key).append(":").append(System.lineSeparator());
             paymentsToReceiveInGroups.get(key).keySet()
                 .forEach(groupMember -> sb.append(generateWaitingPaymentSentence(groupMember)));
         });

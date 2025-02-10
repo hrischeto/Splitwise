@@ -1,6 +1,6 @@
 package mjtfinalproject.command.commands.paymentmanagement;
 
-import mjtfinalproject.command.Command;
+import mjtfinalproject.command.factory.Command;
 import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.group.Group;
 import mjtfinalproject.entities.users.RegisteredUser;

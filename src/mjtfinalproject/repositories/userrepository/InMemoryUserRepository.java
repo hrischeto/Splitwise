@@ -14,8 +14,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryUserRepository implements UserRepository {
 
-    private static final String USER_DATABASE = "users.txt";
-
     private final Map<String, RegisteredUser> registeredUsers = new ConcurrentHashMap<>();
 
     @Override
@@ -45,8 +43,8 @@ public class InMemoryUserRepository implements UserRepository {
     }
 
     @Override
-    public void safeToDatabase() {
-        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(USER_DATABASE))) {
+    public void safeToDatabase(String database) {
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(database))) {
             out.writeObject(this);
         } catch (IOException e) {
             throw new UncheckedIOException("Failed to safe user repository.", e);

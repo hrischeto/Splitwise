@@ -1,6 +1,6 @@
 package mjtfinalproject.command.commands.profilemanagement;
 
-import mjtfinalproject.command.Command;
+import mjtfinalproject.command.factory.Command;
 import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.command.commands.profilemanagement.passwordencryptor.PasswordEncryptor;
 import mjtfinalproject.entities.users.RegisteredUser;
