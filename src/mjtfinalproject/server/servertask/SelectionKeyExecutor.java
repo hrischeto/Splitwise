@@ -36,7 +36,7 @@ public class SelectionKeyExecutor implements Runnable {
 
     @Override
     public void run() {
-        try (selector) {
+        try {
             if (key.isReadable()) {
                 read(key);
             } else if (key.isAcceptable()) {
@@ -66,7 +66,10 @@ public class SelectionKeyExecutor implements Runnable {
 
     private void accept(Selector selector, SelectionKey key) throws IOException {
         ServerSocketChannel sockChannel = (ServerSocketChannel) key.channel();
-        SocketChannel accept = sockChannel.accept();
+        SocketChannel accept;
+        do {
+            accept = sockChannel.accept(); // Try accepting
+        } while (accept == null);
 
         accept.configureBlocking(false);
         accept.register(selector, SelectionKey.OP_READ);

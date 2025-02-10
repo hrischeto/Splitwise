@@ -1,4 +1,6 @@
 package mjtfinalproject.notification;
 
-public interface Notification {
+import java.io.Serializable;
+
+public interface Notification extends Serializable {
 }

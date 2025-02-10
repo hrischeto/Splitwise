@@ -3,38 +3,54 @@ package mjtfinalproject.repositories.userrepository;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.InvalidEntity;
 
-import java.nio.file.Path;
-import java.util.Collections;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.UncheckedIOException;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class InMemoryUserRepository implements UserRepository {
 
-    private static final Path USER_DATABASE = Path.of("users.txt");
+    private static final String USER_DATABASE = "users.txt";
 
-    private final Set<RegisteredUser> registeredUsers = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    private final Map<String, RegisteredUser> registeredUsers = new ConcurrentHashMap<>();
 
     @Override
     public void addUser(RegisteredUser user) {
         if (Objects.isNull(user)) {
-            throw new InvalidEntity("Null");
+            throw new InvalidEntity("Null user");
         }
+
+        if (registeredUsers.containsKey(user.getUsername())) {
+            throw new InvalidEntity("User with that name already exists");
+        }
+
+        registeredUsers.put(user.getUsername(), user);
     }
 
     @Override
     public Optional<RegisteredUser> getUser(String name) {
-        return null;
-    }
+        if (Objects.isNull(name)) {
+            throw new InvalidEntity("Null username");
+        }
 
-    @Override
-    public Set<RegisteredUser> getAllUsers() {
-        return null;
+        if (registeredUsers.containsKey(name)) {
+            return Optional.of(registeredUsers.get(name));
+        }
+
+        return Optional.empty();
     }
 
     @Override
     public void safeToDatabase() {
-
+        try (ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(USER_DATABASE))) {
+            out.writeObject(this);
+        } catch (IOException e) {
+            throw new UncheckedIOException("Failed to safe user repository.", e);
+        }
     }
+
 }

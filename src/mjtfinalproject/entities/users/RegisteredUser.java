@@ -1,13 +1,12 @@
 package mjtfinalproject.entities.users;
 
 import mjtfinalproject.entities.group.Group;
-import mjtfinalproject.notification.Notification;
 import mjtfinalproject.obligation.Obligation;
 
-import java.util.Set;
+import java.io.Serializable;
 import java.util.UUID;
 
-public interface RegisteredUser {
+public interface RegisteredUser extends Serializable {
     void addFriend(RegisteredUser friendToAdd);
 
     void addGroup(Group group);

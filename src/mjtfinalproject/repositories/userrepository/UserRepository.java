@@ -4,7 +4,6 @@ import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.repositories.Repository;
 
 import java.util.Optional;
-import java.util.Set;
 
 public interface UserRepository extends Repository {
 
@@ -12,5 +11,4 @@ public interface UserRepository extends Repository {
 
     Optional<RegisteredUser> getUser(String username);
 
-    Set<RegisteredUser> getAllUsers();
 }

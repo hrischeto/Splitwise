@@ -5,7 +5,9 @@ import mjtfinalproject.command.CommandMessages;
 import mjtfinalproject.entities.group.Group;
 import mjtfinalproject.entities.users.RegisteredUser;
 import mjtfinalproject.exceptions.FailedCommandCreationException;
+import mjtfinalproject.obligation.Obligation;
 import mjtfinalproject.repositories.grouprepository.GroupRepository;
+import mjtfinalproject.repositories.userrepository.UserRepository;
 
 import java.util.Objects;
 import java.util.UUID;
@@ -20,18 +22,21 @@ public class SplitGroup implements Command {
     private final String[] input;
     private final GroupRepository groupRepository;
     private final RegisteredUser payingUser;
+    private final UserRepository userRepository;
 
-    public SplitGroup(GroupRepository groupRepository, RegisteredUser payingUser,
+    public SplitGroup(GroupRepository groupRepository, UserRepository userRepository, RegisteredUser payingUser,
                       String... input) {
         validateArguments(groupRepository, payingUser, input);
 
         if (input.length != INPUT_LENGTH) {
             this.input = null;
             this.groupRepository = null;
+            this.userRepository = null;
             this.payingUser = null;
         } else {
             this.input = input;
             this.groupRepository = groupRepository;
+            this.userRepository = userRepository;
             this.payingUser = payingUser;
         }
     }
@@ -53,10 +58,23 @@ public class SplitGroup implements Command {
         }
 
         Group group = groupRepository.getGroup(groupId);
-        group.splitAmount(amount, payingUser, input[REASON_INDEX]);
+        splitAmount(amount, group, input[REASON_INDEX]);
 
         return CommandMessages.OK_MESSAGE + " \"message\" : " + amount + "LV split between you and " +
             group.getName();
+    }
+
+    private void splitAmount(double amount, Group group, String reason) {
+        double amountToPay = amount / group.getMembers().size();
+        for (String member : group.getMembers()) {
+            if (member.equals(payingUser.getUsername())) {
+                continue;
+            }
+
+            RegisteredUser user = userRepository.getUser(member).get();
+            user.addNewObligationInGroup(group, new Obligation(payingUser.getUsername(), amountToPay, reason));
+            payingUser.addNewWaitingPaymentFromGroupMember(group, user, amountToPay);
+        }
     }
 
     private double getAmount() {

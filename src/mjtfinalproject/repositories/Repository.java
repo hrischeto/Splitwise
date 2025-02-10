@@ -1,6 +1,8 @@
 package mjtfinalproject.repositories;
 
-public interface Repository {
+import java.io.Serializable;
+
+public interface Repository extends Serializable {
 
     void safeToDatabase();
 

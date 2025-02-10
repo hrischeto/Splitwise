@@ -1,16 +1,13 @@
 package mjtfinalproject.entities.group;
 
-import mjtfinalproject.entities.users.RegisteredUser;
-
+import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
-public interface Group {
+public interface Group extends Serializable {
     String getName();
 
-    Set<RegisteredUser> getMembers();
+    Set<String> getMembers();
 
     UUID id();
-
-    void splitAmount(double amount, RegisteredUser payingUser, String reason);
 }
