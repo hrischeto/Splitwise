@@ -51,7 +51,7 @@ public class AddFriend implements Command {
             return CommandMessages.ERROR_MESSAGE + " \"message\":" + e.getMessage();
         }
 
-        return CommandMessages.OK_MESSAGE + " \"message\":\"You are friends with \"" + friendUser.getUsername() + "!";
+        return CommandMessages.OK_MESSAGE + " \"message\":\"You are friends with " + friendUser.getUsername() + "!\"";
     }
 
     private void validateArguments(RegisteredUser user, UserRepository userRepository, String... input) {

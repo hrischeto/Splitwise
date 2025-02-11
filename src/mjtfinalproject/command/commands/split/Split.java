@@ -39,12 +39,12 @@ public class Split implements Command {
     @Override
     public String execute() {
         if (input == null || userRepository == null || payingUser == null) {
-            return CommandMessages.ERROR_MESSAGE + "\"message\": Invalid input for \"split\" command.";
+            return CommandMessages.ERROR_MESSAGE + "\"message\": \"Invalid input for \"split\" command.\"";
         }
 
         double amount = getAmount();
         if (amount < 0.0) {
-            return CommandMessages.ERROR_MESSAGE + "\"message\": Invalid amount.";
+            return CommandMessages.ERROR_MESSAGE + "\"message\": \"Invalid amount.\"";
         }
 
         Optional<RegisteredUser> friend = userRepository.getUser(input[USERNAME_INDEX]);
@@ -52,15 +52,16 @@ public class Split implements Command {
             return CommandMessages.ERROR_MESSAGE + " \"message\" : \"No such user.\"";
         }
         if (!payingUser.isFriend(friend.get())) {
-            return CommandMessages.ERROR_MESSAGE + " \"message\" : \"You are not friends with\"" +
-                friend.get().getUsername();
+            return CommandMessages.ERROR_MESSAGE + " \"message\" : \"You are not friends with" +
+                friend.get().getUsername() + "\"";
         }
 
-        friend.get().addNewObligationToFriend(new Obligation(payingUser.getUsername(), amount / 2.0, input[REASON_INDEX]));
+        friend.get()
+            .addNewObligationToFriend(new Obligation(payingUser.getUsername(), amount / 2.0, input[REASON_INDEX]));
         payingUser.addNewWaitingPaymentFromFriend(friend.get(), amount / 2.0);
 
-        return CommandMessages.OK_MESSAGE + " \"message\" : " + amount + "LV split between you and " +
-            friend.get().getUsername();
+        return CommandMessages.OK_MESSAGE + " \"message\" : \"" + amount + "LV split between you and " +
+            friend.get().getUsername() + "\"";
     }
 
     private double getAmount() {

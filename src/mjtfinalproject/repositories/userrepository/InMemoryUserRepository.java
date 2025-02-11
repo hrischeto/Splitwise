@@ -22,11 +22,11 @@ public class InMemoryUserRepository implements UserRepository {
             throw new InvalidEntity("Null user");
         }
 
-        if (registeredUsers.containsKey(user.getUsername())) {
+        RegisteredUser existing = registeredUsers.putIfAbsent(user.getUsername(), user);
+
+        if (Objects.nonNull(existing)) {
             throw new InvalidEntity("User with that name already exists");
         }
-
-        registeredUsers.put(user.getUsername(), user);
     }
 
     @Override

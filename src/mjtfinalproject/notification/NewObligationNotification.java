@@ -22,6 +22,6 @@ public class NewObligationNotification implements Notification {
 
     @Override
     public String toString() {
-        return "You owe " + receiver + " " + amount + "LV [" + reason + " ]." + System.lineSeparator();
+        return "You owe " + receiver + " " + amount + "LV [" + reason + "]." + System.lineSeparator();
     }
 }

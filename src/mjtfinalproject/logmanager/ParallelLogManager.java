@@ -9,7 +9,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class ParallelLogManager implements LogManager {
 
-    private final Map<SocketChannel, RegisteredUser> loggedUsers = new ConcurrentHashMap<>();
+    private final Map<SocketChannel, RegisteredUser> loggedUsers;
+
+    public ParallelLogManager() {
+        loggedUsers = new ConcurrentHashMap<>();
+    }
+
+    public ParallelLogManager(Map<SocketChannel, RegisteredUser> loggedUsers) {
+        this.loggedUsers = loggedUsers;
+    }
 
     @Override
     public boolean isUserLogged(SocketChannel clientChannel) {
@@ -30,6 +38,8 @@ public class ParallelLogManager implements LogManager {
 
     @Override
     public RegisteredUser getUser(SocketChannel clientChannel) {
+        validateChannel(clientChannel);
+
         if (isUserLogged(clientChannel)) {
             return loggedUsers.get(clientChannel);
         } else {

@@ -87,11 +87,11 @@ public class RegisteredUserImpl implements RegisteredUser {
         if (Objects.isNull(group)) {
             throw new InvalidEntity("Group to join was null.");
         }
-        if (groups.containsKey(group.getName())) {
+
+        UUID existing = groups.putIfAbsent(group.getName(), group.id());
+        if (Objects.nonNull(existing)) {
             throw new InvalidEntity("User is already in a group with that name.");
         }
-
-        groups.put(group.getName(), group.id());
     }
 
     @Override
@@ -118,8 +118,10 @@ public class RegisteredUserImpl implements RegisteredUser {
             throw new IllegalArgumentException("Null obligation.");
         }
 
-        double amount = obligationsToPay.getOrDefault(obligation.receiver(), 0.0);
-        obligationsToPay.put(obligation.receiver(), amount + obligation.amount());
+        synchronized (this) {
+            double amount = obligationsToPay.getOrDefault(obligation.receiver(), 0.0);
+            obligationsToPay.put(obligation.receiver(), amount + obligation.amount());
+        }
 
         newNotificationsFromFriends.add(new NewObligationNotification(obligation));
     }
@@ -128,17 +130,18 @@ public class RegisteredUserImpl implements RegisteredUser {
     public void removeObligationToFriend(RegisteredUser user, double amount) {
         validatePayment(user, amount);
 
-        if (!obligationsToPay.containsKey(user.getUsername()) || obligationsToPay.get(user.getUsername()) == 0.0) {
-            throw new InvalidObligationException("No obligations for this user.");
-        }
+        synchronized (this) {
+            if (!obligationsToPay.containsKey(user.getUsername()) || obligationsToPay.get(user.getUsername()) == 0.0) {
+                throw new InvalidObligationException("No obligations for this user.");
+            }
 
-        double currentAmount = obligationsToPay.get(user.getUsername());
-        if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
-            obligationsToPay.remove(user.getUsername());
-        } else {
-            obligationsToPay.replace(user.getUsername(), currentAmount - amount);
+            double currentAmount = obligationsToPay.get(user.getUsername());
+            if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
+                obligationsToPay.remove(user.getUsername());
+            } else {
+                obligationsToPay.replace(user.getUsername(), currentAmount - amount);
+            }
         }
-
         newNotificationsFromFriends.add(new ApprovedPaymentNotification(user, amount));
     }
 
@@ -146,15 +149,18 @@ public class RegisteredUserImpl implements RegisteredUser {
     public boolean markAsPayedFromFriend(RegisteredUser user, double amount) {
         validatePayment(user, amount);
 
-        if (!paymentsToReceive.containsKey(user.getUsername()) || paymentsToReceive.get(user.getUsername()) == 0.0) {
-            return false;
-        }
+        synchronized (this) {
+            if (!paymentsToReceive.containsKey(user.getUsername()) ||
+                paymentsToReceive.get(user.getUsername()) == 0.0) {
+                return false;
+            }
 
-        double currentAmount = paymentsToReceive.get(user.getUsername());
-        if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
-            paymentsToReceive.remove(user.getUsername());
-        } else {
-            paymentsToReceive.replace(user.getUsername(), currentAmount - amount);
+            double currentAmount = paymentsToReceive.get(user.getUsername());
+            if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
+                paymentsToReceive.remove(user.getUsername());
+            } else {
+                paymentsToReceive.replace(user.getUsername(), currentAmount - amount);
+            }
         }
 
         return true;
@@ -164,8 +170,10 @@ public class RegisteredUserImpl implements RegisteredUser {
     public void addNewWaitingPaymentFromFriend(RegisteredUser user, double amount) {
         validatePayment(user, amount);
 
-        double current = paymentsToReceive.getOrDefault(user.getUsername(), 0.0);
-        paymentsToReceive.put(user.getUsername(), current + amount);
+        synchronized (this) {
+            double current = paymentsToReceive.getOrDefault(user.getUsername(), 0.0);
+            paymentsToReceive.put(user.getUsername(), current + amount);
+        }
     }
 
     @Override
@@ -175,52 +183,64 @@ public class RegisteredUserImpl implements RegisteredUser {
         }
         if (Objects.isNull(group)) {
             throw new IllegalArgumentException("Null group.");
-
         }
 
-        if (!obligationsToPayInGroups.containsKey(group.getName())) {
-            obligationsToPayInGroups.put(group.getName(), new HashMap<>());
+        synchronized (this) {
+            if (!obligationsToPayInGroups.containsKey(group.getName())) {
+                obligationsToPayInGroups.put(group.getName(), new HashMap<>());
+            }
+
+            double amount = obligationsToPayInGroups.get(group.getName()).getOrDefault(obligation.receiver(), 0.0);
+            obligationsToPayInGroups.get(group.getName()).put(obligation.receiver(), amount + obligation.amount());
+
+            addNewObligationNotification(group, obligation);
         }
-
-        double amount = obligationsToPayInGroups.get(group.getName()).getOrDefault(obligation.receiver(), 0.0);
-        obligationsToPayInGroups.get(group.getName()).put(obligation.receiver(), amount + obligation.amount());
-
-        addNewObligationNotification(group, obligation);
     }
 
     private void addNewObligationNotification(Group group, Obligation obligation) {
-        if (!newNotificationsFromGroups.containsKey(group.getName())) {
-            newNotificationsFromGroups.put(group.getName(), new HashSet<>());
+        if (Objects.isNull(obligation)) {
+            throw new IllegalArgumentException("Null obligation.");
+        }
+        if (Objects.isNull(group)) {
+            throw new IllegalArgumentException("Null group.");
         }
 
-        newNotificationsFromGroups.get(group.getName()).add(new NewObligationNotification(obligation));
+        synchronized (this) {
+            if (!newNotificationsFromGroups.containsKey(group.getName())) {
+                newNotificationsFromGroups.put(group.getName(), new HashSet<>());
+            }
+
+            newNotificationsFromGroups.get(group.getName()).add(new NewObligationNotification(obligation));
+        }
     }
 
     @Override
     public void removeObligationInGroup(Group group, RegisteredUser user, double amount) {
         validateGroupPayment(group, user, amount);
 
-        if (!obligationsToPayInGroups.containsKey(group.getName()) ||
-            obligationsToPayInGroups.get(group.getName()).isEmpty()) {
-            throw new InvalidObligationException("No obligations for this group.");
-        }
+        synchronized (this) {
+            if (!obligationsToPayInGroups.containsKey(group.getName()) ||
+                obligationsToPayInGroups.get(group.getName()).isEmpty()) {
+                throw new InvalidObligationException("No obligations for this group.");
+            }
 
-        if (!obligationsToPayInGroups.get(group.getName()).containsKey(user.getUsername()) ||
-            obligationsToPayInGroups.get(group.getName()).get(user.getUsername()) == 0.0) {
-            throw new InvalidObligationException("No obligations for this user.");
-        }
+            if (!obligationsToPayInGroups.get(group.getName()).containsKey(user.getUsername()) ||
+                obligationsToPayInGroups.get(group.getName()).get(user.getUsername()) == 0.0) {
+                throw new InvalidObligationException("No obligations for this user.");
+            }
 
-        double currentAmount = obligationsToPayInGroups.get(group.getName()).get(user.getUsername());
-        if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
-            obligationsToPayInGroups.get(group.getName()).remove(user.getUsername());
-        } else {
-            obligationsToPayInGroups.get(group.getName()).replace(user.getUsername(), currentAmount - amount);
-        }
+            double currentAmount = obligationsToPayInGroups.get(group.getName()).get(user.getUsername());
+            if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
+                obligationsToPayInGroups.get(group.getName()).remove(user.getUsername());
+            } else {
+                obligationsToPayInGroups.get(group.getName()).replace(user.getUsername(), currentAmount - amount);
+            }
 
-        addNewApprovedPaymentNotification(group, user, amount);
+            addNewApprovedPaymentNotification(group, user, amount);
+        }
     }
 
-    private void addNewApprovedPaymentNotification(Group group, RegisteredUser user, double amount) {
+    private synchronized void addNewApprovedPaymentNotification(Group group, RegisteredUser user, double amount) {
         if (!newNotificationsFromGroups.containsKey(group.getName())) {
             newNotificationsFromGroups.put(group.getName(), new HashSet<>());
         }
@@ -232,21 +252,23 @@ public class RegisteredUserImpl implements RegisteredUser {
     public boolean markAsPayedFromGroupMember(Group group, RegisteredUser user, double amount) {
         validateGroupPayment(group, user, amount);
 
-        if (!paymentsToReceiveInGroups.containsKey(group.getName()) ||
-            paymentsToReceiveInGroups.get(group.getName()).isEmpty()) {
-            return false;
-        }
+        synchronized (this) {
+            if (!paymentsToReceiveInGroups.containsKey(group.getName()) ||
+                paymentsToReceiveInGroups.get(group.getName()).isEmpty()) {
+                return false;
+            }
 
-        if (!paymentsToReceiveInGroups.get(group.getName()).containsKey(user.getUsername()) ||
-            paymentsToReceiveInGroups.get(group.getName()).get(user.getUsername()) == 0.0) {
-            return false;
-        }
+            if (!paymentsToReceiveInGroups.get(group.getName()).containsKey(user.getUsername()) ||
+                paymentsToReceiveInGroups.get(group.getName()).get(user.getUsername()) == 0.0) {
+                return false;
+            }
 
-        double currentAmount = paymentsToReceiveInGroups.get(group.getName()).get(user.getUsername());
-        if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
-            paymentsToReceiveInGroups.get(group.getName()).remove(user.getUsername());
-        } else {
-            paymentsToReceiveInGroups.get(group.getName()).replace(user.getUsername(), currentAmount - amount);
+            double currentAmount = paymentsToReceiveInGroups.get(group.getName()).get(user.getUsername());
+            if (currentAmount - amount < 0 || Math.abs(currentAmount - amount) < ALLOWANCE) {
+                paymentsToReceiveInGroups.get(group.getName()).remove(user.getUsername());
+            } else {
+                paymentsToReceiveInGroups.get(group.getName()).replace(user.getUsername(), currentAmount - amount);
+            }
         }
 
         return true;
@@ -256,12 +278,14 @@ public class RegisteredUserImpl implements RegisteredUser {
     public void addNewWaitingPaymentFromGroupMember(Group group, RegisteredUser user, double amount) {
         validateGroupPayment(group, user, amount);
 
-        if (!paymentsToReceiveInGroups.containsKey(group.getName())) {
-            paymentsToReceiveInGroups.put(group.getName(), new HashMap<>());
-        }
+        synchronized (this) {
+            if (!paymentsToReceiveInGroups.containsKey(group.getName())) {
+                paymentsToReceiveInGroups.put(group.getName(), new HashMap<>());
+            }
 
-        double current = paymentsToReceiveInGroups.get(group.getName()).getOrDefault(user.getUsername(), 0.0);
-        paymentsToReceiveInGroups.get(group.getName()).put(user.getUsername(), current + amount);
+            double current = paymentsToReceiveInGroups.get(group.getName()).getOrDefault(user.getUsername(), 0.0);
+            paymentsToReceiveInGroups.get(group.getName()).put(user.getUsername(), current + amount);
+        }
     }
 
     @Override
@@ -283,6 +307,7 @@ public class RegisteredUserImpl implements RegisteredUser {
         });
 
         newNotificationsFromFriends.clear();
+        newNotificationsFromGroups.clear();
         return sb.toString();
     }
 

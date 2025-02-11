@@ -39,7 +39,7 @@ public class CommandFactory {
     private static final String LOGOUT = "logout";
     private static final String SPLIT = "split";
     private static final String SPLIT_GROUP = "split-group";
-    private static final String STOP_SERVER = "stop-sever";
+    private static final String STOP_SERVER = "stop-server";
 
     private final GroupRepository groupRepository;
     private final UserRepository userRepository;
@@ -56,7 +56,18 @@ public class CommandFactory {
         logManager = new ParallelLogManager();
     }
 
+    public CommandFactory(GroupRepository groupRepository, UserRepository userRepository, LogManager logManager) {
+        validateRepository(groupRepository);
+        validateRepository(userRepository);
+
+        this.groupRepository = groupRepository;
+        this.userRepository = userRepository;
+        this.logManager = logManager;
+    }
+
     public Command newCommand(String input, SocketChannel clientChannel) {
+        validateCommandInput(input, clientChannel);
+
         List<String> tokens = Arrays.stream(input.split(SEPARATOR))
             .map(String::strip)
             .toList();
@@ -81,6 +92,15 @@ public class CommandFactory {
     void validateRepository(Repository repo) {
         if (Objects.isNull(repo)) {
             throw new IllegalArgumentException("Null repository.");
+        }
+    }
+
+    void validateCommandInput(String input, SocketChannel clientChannel) {
+        if (Objects.isNull(input)) {
+            throw new IllegalArgumentException("Null client input.");
+        }
+        if (Objects.isNull(clientChannel)) {
+            throw new IllegalArgumentException("Null client channel.");
         }
     }
 
