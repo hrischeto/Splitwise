@@ -133,5 +133,6 @@ public class CommandFactoryTest {
             commandFactory.newCommand("split-group 10 group", clientChannelMock),
             "Expected BadCommand, when user is not logged");
     }
+
 }
 

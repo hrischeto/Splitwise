@@ -70,7 +70,25 @@ public class CreateGroupTest {
         verify(user2, times(1)).addGroup(any());
         verify(user1, times(1)).addGroup(any());
     }
+    /*public String execute() {
+        if (Objects.isNull(input)) {
+            return CommandMessages.ERROR_MESSAGE + " \"message\":\"Invalid input for \"create-group\" command.";
+        }
 
+        Set<RegisteredUser> members = new HashSet<>();
+        String membersValidation = getMembers(members);
+        if (Objects.nonNull(membersValidation)) {
+            return membersValidation;
+        }
+
+        Group group = new GroupImpl(input[GROUP_NAME_INDEX], members);
+        groupRepository.addGroup(group);
+
+        for (RegisteredUser member : members) {
+            member.addGroup(group);
+        }
+        return CommandMessages.OK_MESSAGE + " \"message\":\"Created group \"" + input[GROUP_NAME_INDEX] + "\"!\"";
+    }*/
     @Test
     void testAUserNotExisting() {
         when(userRepositoryMock.getUser("user1")).thenReturn(Optional.empty());
