@@ -31,7 +31,6 @@ $ approve-payment <amount> <username>
 $ approve-group-member-payment <amount> <username> <group>
 $ convert-currency <currency>
 $ get-status
-$ stop-server
 ```
 ### Testing
 Use IntelliJ IDEA's built-in test runner to execute tests in the test/ directory.
